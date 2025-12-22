@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <link rel="stylesheet" href="src/style.css?v=2.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=M+PLUS+Rounded+1c&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Donite</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.svg">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-content">
+        <div class="logo-section">
+          <img class="logo" onclick="window.open('index.html','_top' ); return false;" src="img/logo.svg">
+          <img id="sargo" class="logo" onclick="window.open('https://www.sargo.be','_blank' ); return false;" src="img/sargo2.svg">
+        </div>
+        <div class="menu-lang">
+          <div class="menu-section">
+            <a onclick="window.open('index.html','_top' ); return false;" id="myBtnUp">Domů</a>
+            <div class="store-button">
+              <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků&searr;</a>
+              <div class="menu-section-dropdown">
+                  <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace zápachu</a>
+                  <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
+              </div>
+            </div>
+            <a onclick="downFunction()">Kontakty</a>
+          </div>
+          <div class="cart" onclick="window.open('cart.html','_top' ); return false;">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
+            </svg> 
+            <span id="cartAmount">0</span>           
+          </div>        
+        </div>
+        <div class="menu-lang-mobile" id="menuLang">
+          <div class="menu-section-mobile">
+            <a onclick="window.open('index.html','_top' ); return false;">Domů</a>
+            <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků</a>
+              <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace<br> zápachu</a>
+              <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
+            <a onclick="downFunction(); myFunction(); toggleHamburger();" id="myBtnDowm">Kontakty</a>
+          </div>
+        </div>
+        <div class="mobile-menu-btn">
+          <a href="javascript:void(0);" class="nav-toggle" onclick="myFunction()">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="aboutus-text">
+        <div class="aboutus-title">
+          <p>Obchodní podmínky</p>
+        </div>
+        <div class="aboutus-container-textfield">
+          <p class="aboutus-container-textfield-title">1. Úvodní ustanovení</p>
+          <p class="aboutus-container-textfield-text">1.1. Tyto obchodní podmínky upravují práva a povinnosti společnosti Donite s.r.o., IČO: 07081235, se sídlem Haškova 420, Sobědruhy, 415 10 Teplice, (dále jen „Prodávající“), a kupujících (dále jen „Kupující“) při nákupu výrobků prostřednictvím internetového obchodu Prodávajícího.</p>
+          <p class="aboutus-container-textfield-text">1.2. Obchodní podmínky jsou nedílnou součástí každé kupní smlouvy uzavřené prostřednictvím internetového obchodu.</p>
+          <p class="aboutus-container-textfield-title">2. Uzavření smlouvy</p>
+          <p class="aboutus-container-textfield-text">2.1. Kupní smlouva je uzavřena potvrzením objednávky ze strany Prodávajícího zaslaným na e-mailovou adresu Kupujícího.</p>
+          <p class="aboutus-container-textfield-text">2.3. Prodávající si vyhrazuje právo odmítnout objednávku v případě nedostupnosti zboží.</p>
+          <p class="aboutus-container-textfield-title">3. Platební podmínky</p>
+          <p class="aboutus-container-textfield-text">3.1. Platba za objednané zboží probíhá na základě faktury zaslané Kupujícímu e-mailem.</p>
+          <p class="aboutus-container-textfield-text">3.2. Faktura obsahuje přesné platební údaje a splatnost.</p>
+          <p class="aboutus-container-textfield-text">3.3. Kupující je povinen uhradit fakturu ve lhůtě splatnosti uvedené na faktuře.</p>
+          <p class="aboutus-container-textfield-title">4. Dodací podmínky</p>
+          <p class="aboutus-container-textfield-text">4.1. Předání zboží dopravci probíhá ve lhůtách uvedených na faktuře.</p>
+          <p class="aboutus-container-textfield-text">4.2. Lhůty dodání zboží Kupujícímu se řídí podmínkami příslušné přepravní společnosti.</p>
+          <p class="aboutus-container-textfield-text">4.3. Nebezpečí škody na zboží přechází na Kupujícího okamžikem převzetí zboží od dopravce.</p>
+          <p class="aboutus-container-textfield-text">4.4. Náklady na dopravu hradí Kupující, není-li sjednáno jinak.</p>
+          <p class="aboutus-container-textfield-title">5. Jakost zboží</p>
+          <p class="aboutus-container-textfield-text">5.1. Jakost a bezpečnost výrobků je určena platnou legislativou České republiky.</p>
+          <p class="aboutus-container-textfield-text">5.2. Prodávající garantuje, že výrobky splňují všechny zákonné požadavky a normy.</p>
+          <p class="aboutus-container-textfield-title">6. Reklamace a vrácení zboží</p>
+          <p class="aboutus-container-textfield-text">6.1. Reklamace a vrácení zboží se řídí příslušnými ustanoveními občanského zákoníku a zákona o ochraně spotřebitele.</p>
+          <p class="aboutus-container-textfield-text">6.2. Kupující má právo odstoupit od smlouvy do 14 dnů od převzetí zboží, pokud je Kupujícím spotřebitel.</p>
+          <p class="aboutus-container-textfield-text">6.2. Reklamace se uplatňuje písemně na adresu sídla Prodávajícího nebo e-mailem. Prodávající vyřídí reklamaci v zákonné lhůtě.</p>
+          <p class="aboutus-container-textfield-title">7. Závěrečná ustanovení</p>
+          <p class="aboutus-container-textfield-text">7.1. Prodávající si vyhrazuje právo obchodní podmínky měnit. Nové znění je vždy zveřejněno na webových stránkách internetového obchodu.</p>
+          <p class="aboutus-container-textfield-text">7.3. Veškeré právní vztahy se řídí právním řádem České republiky.</p>
+          <p class="aboutus-container-textfield-text">7.4. Případné spory budou řešeny příslušným soudem v místě sídla Prodávajícího.</p>
+        </div>
+    </div>
+    <div class="footer">
+      <div class="footer-content">
+          <div class="details-title">
+            <h2>Donite s.r.o.</h2>
+          </div>
+          <div class="details-text">
+            <a href="tel:+420703330703">tel.: +420 703 330 703</a>
+            <a href="mailto:info@donite.cz">email: info@donite.cz</a>
+            <p>IČO: 07081235</p>
+            <p>DIČ: CZ07081235</p>
+            <p>Haškova 420</p>
+            <p>415 10 Teplice</p>
+            <p>Česká republika</p>
+            <div class="qr-container">
+              <div class="qr-field" onclick="window.open('/donite.vcf','_top' ); return false;">
+                <img class="click" src="img/click.jpg">
+                <img class="qr" src="img/qr.svg">
+              </div>
+              <div class="qr-field">
+              </div>
+              <p>Přidat do kontaktů</p>
+            </div>
+          </div>
+          <div class="operating-hours-title">
+            <h2>Provozní doba</h2>
+          </div>
+          <div class="operating-hours-text">
+            <p>Po.: 08:00–16:00</p>
+            <p>Út.: 08:00–16:00</p>
+            <p>St.: 08:00–16:00</p>
+            <p>Čt.: 08:00–16:00</p>
+            <p>Pá.: 08:00–16:00</p>
+            <p>So.: zavřeno</p>
+            <p>Ne.: zavřeno</p>
+            <div class="abas-container">
+              <img class="abas-logo" onclick="window.open('http://www.abascr.cz/'); return false;" src="img/abas.png">
+              <p>Jsme členové</p>
+            </div>
+          </div>
+          <div class="links-title">
+            <h2>Odkazy</h2>
+          </div>
+          <div class="links-text">
+            <a onclick="topFunction()">Obchodní podmínky</a>
+            <a href="gdpr.html">Ochrana osobních údajů</a>
+          </div>
+        <div class="copyright">
+          <p>© 2025 Donite s.r.o.</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="topFunction()" id="upBtn">
+      <img class ="up-image" src="img/up.png">
+    </button>
+    <script src="src/shared.js"></script>
+  <script>
+    let mybuttonup = document.getElementById("myBtnUp");
+    function topFunction() {
+      document.body.scrollTop = 0; 
+      document.documentElement.scrollTop = 0; 
+    }
+    let mybuttondown = document.getElementById("myBtnDowm");
+    function downFunction() {
+      document.body.scrollTop = document.documentElement.scrollHeight;
+      document.documentElement.scrollTop = document.documentElement.scrollHeight;
+    }
+    function myFunction() {
+      var x = document.getElementById("menuLang");
+      if (x.style.display === "flex") {
+        x.style.display = "none";
+      } else {
+        x.style.display = "flex";
+      }
+    }
+    let navToggle = document.querySelector('.nav-toggle')
+    let bars = document.querySelectorAll('.bar')
+    function toggleHamburger(e) {
+      bars.forEach(bar => bar.classList.toggle('x'))
+    }
+    navToggle.addEventListener('click', toggleHamburger)
+    let mybutton = document.getElementById("upBtn");
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+      if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+        mybutton.style.display = "flex";
+      } else {
+        mybutton.style.display = "none";
+      }
+    }
+    function topFunction() {
+      document.body.scrollTop = 0; 
+      document.documentElement.scrollTop = 0;
+    }
+  </script>
+  </body>
+</html>     

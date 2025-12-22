@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <link rel="stylesheet" href="src/style.css?v=2.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=M+PLUS+Rounded+1c&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Donite</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.svg">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-content">
+        <div class="logo-section">
+          <img class="logo" onclick="window.open('index.html','_top' ); return false;" src="img/logo.svg">
+          <img id="sargo" class="logo" onclick="window.open('https://www.sargo.be','_blank' ); return false;" src="img/sargo2.svg">
+        </div>
+        <div class="menu-lang">
+          <div class="menu-section">
+            <a onclick="topFunction()" id="myBtnUp">Domů</a>
+            <div class="store-button">
+              <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků&searr;</a>
+              <div class="menu-section-dropdown">
+                  <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
+                  <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace zápachu</a>
+                  <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
+              </div>
+            </div>
+            <a onclick="downFunction()">Kontakty</a>
+          </div>
+          <div class="cart" onclick="window.open('cart.html','_top' ); return false;">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
+            </svg> 
+            <span id="cartAmount">0</span>           
+          </div>        
+        </div>
+        <div class="menu-lang-mobile" id="menuLang">
+          <div class="menu-section-mobile">
+            <a onclick="topFunction(); myFunction(); toggleHamburger();" id="myBtnUp">Domů</a>
+            <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků</a>
+              <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
+              <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace<br> zápachu</a>
+              <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
+            <a onclick="downFunction(); myFunction(); toggleHamburger();" id="myBtnDowm">Kontakty</a>
+          </div>
+        </div>
+        <div class="mobile-menu-btn">
+          <a href="javascript:void(0);" class="nav-toggle" onclick="myFunction()">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="aboutus">
+        <div class="aboutus-title">
+          <p>O nás</p>
+        </div>
+        <div class="aboutus-container">
+          <div class="aboutus-container-video">  
+              <video loop autoplay muted playsinline>
+                <source src="img/conveyor.mp4" type="video/mp4">
+              </video>
+          </div>
+            <div class="aboutus-container-text">
+              <p>Donite s.r.o. od roku 2018 vyrábí čistící a dezinfekční přípravky pro profesionální úklid, vhodné pro oblast ústavů sociální péče, domovů důchodců, nemocnic, škol, nákupních center, wellness resortů, aquaparků, potravinářského průmyslu, atd.</p>
+              <p>Naše výrobky mají ty nejlepší vlastnosti, které dokážou uspokojit požadavky zákazníků, splňují nejvyšší standardy kvality a vyznačují se také dostupnou cenou.</p>
+            </div>
+        </div>
+    </div>
+    <div class="products-section" id="productsList">
+      <div class="products-title">
+        <p>Naše produkty</p>
+      </div>
+      <div class="products-grid">
+        <div class="product-all" onclick="window.open('store.html#cleaning','_top' ); return false;">
+          <div class="product-cell-left">
+            <h2>Čisticí prostředky</h2>
+            <p>Odstranění nečistot z různých povrchů, jako jsou podlahy, nábytek nebo nádobí</p>
+          </div>
+          <div class="product-cell-right">
+              <img src="img/cleaningagents.jpg">
+          </div>
+        </div>
+        <div class="product-all" onclick="window.open('store.html#desinfection','_top' ); return false;">
+          <div class="product-cell-left" id="desinfectionDescription">
+            <h2>Dezinfekční prostředky</h2>
+            <p>Ničení bakterií a virů, které mohou být zdraví škodlivé</p>
+          </div>
+          <div class="product-cell-right">
+              <img src="img/desinfectants.jpg">
+          </div>
+        </div>
+        <div class="product-all" onclick="window.open('store.html#caring','_top' ); return false;">
+          <div class="product-cell-left" id="careDescription">
+            <h2>Ošetřující prostředky</h2>
+            <p>Chrání a zachovávají vlastnosti povrchů, na které jsou aplikovány</p>
+          </div>
+          <div class="product-cell-right">
+              <img src="img/care.jpg">
+          </div>
+        </div>
+        <div class="product-all" onclick="window.open('store.html#odor','_top' ); return false;">
+          <div class="product-cell-left" id="combinationDescription">
+            <h2>Ekologická neutralizace zápachu</h2>
+            <p>Snížení a prevence emisí zápachu, odstranění olejů a tuků</p>
+          </div>
+          <div class="product-cell-right">
+              <img src="img/combined.jpg">
+          </div>
+        </div>
+        <div class="product-all" onclick="window.open('store.html#special','_top' ); return false;">
+          <div class="product-cell-left" id="spacDescription">
+            <h2>Speciální prostředky</h2>
+            <p>Odstranění odolných nečistot: rez, vodní kámen a usazeniny</p>
+          </div>
+          <div class="product-cell-right">
+              <img src="img/special.png">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="our-clients">
+      <div class="our-clients-title">
+        <p>Naši klienti</p>
+      </div>
+      <div class="clients">
+        <img onclick="window.open('https://www.fkteplice.cz/'); return false;" src="img/clients/1.png">
+        <img onclick="window.open('https://www.aquacentrum-vrchlabi.cz/'); return false;" src="img/clients/2.png">
+        <img onclick="window.open('https://www.csplitomerice.cz/'); return false;" src="img/clients/3.png">
+        <img onclick="window.open('https://www.czu.cz'); return false;" src="img/clients/4.png">
+        <img onclick="window.open('https://www.kravihora-brno.cz/' ); return false;" src="img/clients/5.png">
+        <img onclick="window.open('https://www.lazne-losiny.cz/' ); return false;" src="img/clients/6.png">
+        <img onclick="window.open('https://www.mariuspedersen.cz/' ); return false;" src="img/clients/7.png">
+        <img onclick="window.open('https://mazubri.cz/' ); return false;" src="img/clients/8.png">
+        <img onclick="window.open('https://www.msul.cz/' ); return false;" src="img/clients/9.png">
+        <img onclick="window.open('https://www.orlenunipetroldoprava.cz/' ); return false;" src="img/clients/10.png">
+        <img onclick="window.open('https://www.sportpe.cz/' ); return false;" src="img/clients/11.png">
+        <img onclick="window.open('https://www.pms-spk.cz/' ); return false;" src="img/clients/12.png">
+        <img onclick="window.open('http://www.sigmaplast.cz/' ); return false;" src="img/clients/13.png">
+        <img onclick="window.open('https://www.sportkrupka.cz/' ); return false;" src="img/clients/14.png">
+        <img onclick="window.open('https://www.sportoviste-tachov.cz/' ); return false;" src="img/clients/15.png">
+        <img onclick="window.open('https://www.snznojmo.cz/' ); return false;" src="img/clients/16.png">
+        <img onclick="window.open('https://www.stezazlin.cz/' ); return false;" src="img/clients/17.png">
+        <img onclick="window.open('https://www.tsunicov.cz/' ); return false;" src="img/clients/18.png">
+        <img onclick="window.open('https://uzenarstvi-jezek.cz/' ); return false;" src="img/clients/19.png">
+        <img onclick="window.open('https://sc-repy.cz/' ); return false;" src="img/clients/20.png">
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-content">
+          <div class="details-title">
+            <h2>Donite s.r.o.</h2>
+          </div>
+          <div class="details-text">
+            <a href="tel:+420703330703">tel.: +420 703 330 703</a>
+            <a href="mailto:info@donite.cz">email: info@donite.cz</a>
+            <p>IČO: 07081235</p>
+            <p>DIČ: CZ07081235</p>
+            <p>Haškova 420</p>
+            <p>415 10 Teplice</p>
+            <p>Česká republika</p>
+            <div class="qr-container">
+              <div class="qr-field" onclick="window.open('/donite.vcf','_top' ); return false;">
+                <img class="click" src="img/click.jpg">
+                <img class="qr" src="img/qr.svg">
+              </div>
+              <div class="qr-field">
+              </div>
+              <p>Přidat do kontaktů</p>
+            </div>
+          </div>
+          <div class="operating-hours-title">
+            <h2>Provozní doba</h2>
+          </div>
+          <div class="operating-hours-text">
+            <p>Po.: 08:00–16:00</p>
+            <p>Út.: 08:00–16:00</p>
+            <p>St.: 08:00–16:00</p>
+            <p>Čt.: 08:00–16:00</p>
+            <p>Pá.: 08:00–16:00</p>
+            <p>So.: zavřeno</p>
+            <p>Ne.: zavřeno</p>
+            <div class="abas-container">
+              <img class="abas-logo" onclick="window.open('http://www.abascr.cz/'); return false;" src="img/abas.png">
+              <p>Jsme členové</p>
+            </div>
+          </div>
+          <div class="links-title">
+            <h2>Odkazy</h2>
+          </div>
+          <div class="links-text">
+            <a href="terms.html">Obchodní podmínky</a>
+            <a href="gdpr.html">Ochrana osobních údajů</a>
+          </div>
+        <div class="copyright">
+          <p>© 2025 Donite s.r.o.</p>
+        </div>
+      </div>
+    </div>
+    <button onclick="topFunction()" id="upBtn">
+      <img class ="up-image" src="img/up.png">
+    </button>
+    <script src="src/shared.js"></script>
+  <script>
+    let mybuttonup = document.getElementById("myBtnUp");
+    function topFunction() {
+      document.body.scrollTop = 0; 
+      document.documentElement.scrollTop = 0; 
+    }
+    let mybuttondown = document.getElementById("myBtnDowm");
+    function downFunction() {
+      document.body.scrollTop = document.documentElement.scrollHeight;
+      document.documentElement.scrollTop = document.documentElement.scrollHeight;
+    }
+    function myFunction() {
+      var x = document.getElementById("menuLang");
+      if (x.style.display === "flex") {
+        x.style.display = "none";
+      } else {
+        x.style.display = "flex";
+      }
+    }
+    let navToggle = document.querySelector('.nav-toggle')
+    let bars = document.querySelectorAll('.bar')
+    function toggleHamburger(e) {
+      bars.forEach(bar => bar.classList.toggle('x'))
+    }
+    navToggle.addEventListener('click', toggleHamburger)
+    let mybutton = document.getElementById("upBtn");
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+      if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+        mybutton.style.display = "flex";
+      } else {
+        mybutton.style.display = "none";
+      }
+    }
+    function topFunction() {
+      document.body.scrollTop = 0; 
+      document.documentElement.scrollTop = 0;
+    }
+  </script>
+  </body>
+</html>     
