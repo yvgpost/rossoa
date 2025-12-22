@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html lang="cs">
   <head>
-    <link rel="stylesheet" href="src/style.css?v=2.0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="canonical" href="https://kaceni-rossoa.cz/terms.html">
+    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="929b76c0-5767-43ce-9b0f-2631624d7700"  type="text/javascript"></script>    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-M5QKJ7TZ');</script>
+    <!-- End Google Tag Manager -->
+    <link rel="stylesheet" href="style.css?v=1.15">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta content="width=device-width, initial-scale=1" name="viewport" http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
@@ -10,48 +19,45 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=M+PLUS+Rounded+1c&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Donite</title>
-    <link rel="icon" type="image/x-icon" href="img/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>ROSSOA s.r.o.</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon-32x32.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAmCtRPsdGPqTMXCC72MdT0hksfevf1qsI&libraries=places&callback=initAutocomplete" async defer></script>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M5QKJ7TZ"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="header">
       <div class="header-content">
         <div class="logo-section">
-          <img class="logo" onclick="window.open('index.html','_top' ); return false;" src="img/logo.svg">
-          <img id="sargo" class="logo" onclick="window.open('https://www.sargo.be','_blank' ); return false;" src="img/sargo2.svg">
+          <img src="img/logo1.svg">
+          <div class="logo-text">
+            <p>ROSSOA s.r.o.</p>
+            <p>Rizikové kácení stromů</p>
+            <p id="mobileSlogan">po celém Ústeckém kraji</p>
+          </div>          
         </div>
         <div class="menu-lang">
           <div class="menu-section">
-            <a onclick="window.open('index.html','_top' ); return false;" id="myBtnUp">Domů</a>
-            <div class="store-button">
-              <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků&searr;</a>
-              <div class="menu-section-dropdown">
-                  <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace zápachu</a>
-                  <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
-              </div>
-            </div>
-            <a onclick="downFunction()">Kontakty</a>
+            <a href="index.html">ÚVOD</a>
+            <a href="index.html#ourservices">NAŠE SLUŽBY</a>
+            <a href="index.html#order">OBJEDNAT</a>
+            <a onclick="downFunction()">KONTAKTY</a>
           </div>
-          <div class="cart" onclick="window.open('cart.html','_top' ); return false;">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
-            </svg> 
-            <span id="cartAmount">0</span>           
-          </div>        
+          <div class="upper-contacts">
+            <p class="upper-contacts-text">Po celém Ústeckém kraji</p>
+            <a class="phone-link" href="tel:+420775280578">+420 775 280 578</a>
+          </div>
         </div>
         <div class="menu-lang-mobile" id="menuLang">
           <div class="menu-section-mobile">
-            <a onclick="window.open('index.html','_top' ); return false;">Domů</a>
-            <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků</a>
-              <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace<br> zápachu</a>
-              <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
-            <a onclick="downFunction(); myFunction(); toggleHamburger();" id="myBtnDowm">Kontakty</a>
+            <a href="index.html" id="myBtnUp">ÚVOD</a>
+            <a href="index.html#ourservices">NAŠE SLUŽBY</a>
+            <a href="index.html#order">OBJEDNAT</a>
+            <a onclick="myFunction(); toggleHamburger(); scrollToContacts()">KONTAKTY</a>
           </div>
         </div>
         <div class="mobile-menu-btn">
@@ -63,95 +69,85 @@
         </div>
       </div>
     </div>
-    <div class="aboutus-text">
-        <div class="aboutus-title">
-          <p>Obchodní podmínky</p>
+  <div class="gdpr">
+      <div class="contracting-container">
+         <div class="gdpr-title">
+          <p id="ourServicesTitle">OBCHODNÍ PODMÍNKY</p>
         </div>
-        <div class="aboutus-container-textfield">
-          <p class="aboutus-container-textfield-title">1. Úvodní ustanovení</p>
-          <p class="aboutus-container-textfield-text">1.1. Tyto obchodní podmínky upravují práva a povinnosti společnosti Donite s.r.o., IČO: 07081235, se sídlem Haškova 420, Sobědruhy, 415 10 Teplice, (dále jen „Prodávající“), a kupujících (dále jen „Kupující“) při nákupu výrobků prostřednictvím internetového obchodu Prodávajícího.</p>
-          <p class="aboutus-container-textfield-text">1.2. Obchodní podmínky jsou nedílnou součástí každé kupní smlouvy uzavřené prostřednictvím internetového obchodu.</p>
-          <p class="aboutus-container-textfield-title">2. Uzavření smlouvy</p>
-          <p class="aboutus-container-textfield-text">2.1. Kupní smlouva je uzavřena potvrzením objednávky ze strany Prodávajícího zaslaným na e-mailovou adresu Kupujícího.</p>
-          <p class="aboutus-container-textfield-text">2.3. Prodávající si vyhrazuje právo odmítnout objednávku v případě nedostupnosti zboží.</p>
-          <p class="aboutus-container-textfield-title">3. Platební podmínky</p>
-          <p class="aboutus-container-textfield-text">3.1. Platba za objednané zboží probíhá na základě faktury zaslané Kupujícímu e-mailem.</p>
-          <p class="aboutus-container-textfield-text">3.2. Faktura obsahuje přesné platební údaje a splatnost.</p>
-          <p class="aboutus-container-textfield-text">3.3. Kupující je povinen uhradit fakturu ve lhůtě splatnosti uvedené na faktuře.</p>
-          <p class="aboutus-container-textfield-title">4. Dodací podmínky</p>
-          <p class="aboutus-container-textfield-text">4.1. Předání zboží dopravci probíhá ve lhůtách uvedených na faktuře.</p>
-          <p class="aboutus-container-textfield-text">4.2. Lhůty dodání zboží Kupujícímu se řídí podmínkami příslušné přepravní společnosti.</p>
-          <p class="aboutus-container-textfield-text">4.3. Nebezpečí škody na zboží přechází na Kupujícího okamžikem převzetí zboží od dopravce.</p>
-          <p class="aboutus-container-textfield-text">4.4. Náklady na dopravu hradí Kupující, není-li sjednáno jinak.</p>
-          <p class="aboutus-container-textfield-title">5. Jakost zboží</p>
-          <p class="aboutus-container-textfield-text">5.1. Jakost a bezpečnost výrobků je určena platnou legislativou České republiky.</p>
-          <p class="aboutus-container-textfield-text">5.2. Prodávající garantuje, že výrobky splňují všechny zákonné požadavky a normy.</p>
-          <p class="aboutus-container-textfield-title">6. Reklamace a vrácení zboží</p>
-          <p class="aboutus-container-textfield-text">6.1. Reklamace a vrácení zboží se řídí příslušnými ustanoveními občanského zákoníku a zákona o ochraně spotřebitele.</p>
-          <p class="aboutus-container-textfield-text">6.2. Kupující má právo odstoupit od smlouvy do 14 dnů od převzetí zboží, pokud je Kupujícím spotřebitel.</p>
-          <p class="aboutus-container-textfield-text">6.2. Reklamace se uplatňuje písemně na adresu sídla Prodávajícího nebo e-mailem. Prodávající vyřídí reklamaci v zákonné lhůtě.</p>
-          <p class="aboutus-container-textfield-title">7. Závěrečná ustanovení</p>
-          <p class="aboutus-container-textfield-text">7.1. Prodávající si vyhrazuje právo obchodní podmínky měnit. Nové znění je vždy zveřejněno na webových stránkách internetového obchodu.</p>
-          <p class="aboutus-container-textfield-text">7.3. Veškeré právní vztahy se řídí právním řádem České republiky.</p>
-          <p class="aboutus-container-textfield-text">7.4. Případné spory budou řešeny příslušným soudem v místě sídla Prodávajícího.</p>
+        <a class="our-services-anchor" id="ourservices">Our services anchor</a>
+        <div class="gdpr-section">
+          <div class="gdpr-container-text">
+              <p>1.1 Tyto obchodní podmínky upravují právní vztahy mezi poskytovatelem služeb a zákazníky. Používáním webových stránek souhlasíte s těmito obchodními podmínkami.</p>
+              <p>1.2 Poskytovatelem služeb je společnost ROSSOA s.r.o., Na pěnkavce 620, 417 12 Proboštov, Česká republika, IČ: 27094847. Tyto podmínky se vztahují na všechny smlouvy uzavřené mezi poskytovatelem a zákazníkem. Jakékoliv odlišné ujednání musí být písemně odsouhlaseno oběma stranami.</p>
+              <p>1.3 Předmětem smlouvy je poskytování služeb: kácení stromů, rizikové kácení a ořez stromů, odvoz vzniklého odpadu, pronájem techniky s obsluhou. Přesný rozsah služeb je vždy specifikován ve smlouvě uzavřené mezi poskytovatelem a zákazníkem.</p>
+              <p>1.4 Smlouva je uzavřena na základě písemné objednávky zákazníka a následného potvrzení ze strany poskytovatele. Zákazník je povinen uvést správné a úplné údaje potřebné k plnění smlouvy. Objednávka je závazná pro obě strany po jejím písemném potvrzení poskytovatelem.</p>
+              <p>1.5 Cena za poskytované služby je stanovena na základě individuální dohody. Platba za služby musí být provedena na základě vystavené faktury v termínu uvedeném na faktuře.</p>
+              <p>1.6 Zákazník je povinen zajistit poskytovateli přístup na místo plnění a poskytnout potřebnou součinnost. Zákazník se zavazuje k úhradě sjednané ceny. Zákazník je povinen oznámit jakékoliv vady nebo problémy při plnění služby bez zbytečného odkladu.</p>
+              <p>1.7 Poskytovatel se zavazuje vykonávat sjednané služby s odbornou péčí a v dohodnutém termínu. Poskytovatel si vyhrazuje právo odmítnout realizaci zakázky, pokud zákazník neposkytne potřebnou součinnost nebo nesplní své povinnosti. V případě vyšší moci má poskytovatel právo změnit termín plnění nebo smlouvu zcela ukončit.</p>
+              <p>1.8 Zákazník má právo reklamovat poskytnuté služby, pokud nesplňují dohodnuté podmínky. Reklamaci je nutné podat písemně do 14 dnů od zjištění vady. Poskytovatel je povinen reklamaci vyřídit bez zbytečného odkladu, nejpozději však do 30 dnů.</p>
+              <p>1.9 Tyto obchodní podmínky vstupují v platnost dnem jejich zveřejnění na webových stránkách poskytovatele. Poskytovatel si vyhrazuje právo tyto podmínky kdykoliv změnit. Veškeré spory budou řešeny v souladu s právními předpisy České republiky.</p>
+            </div>
         </div>
-    </div>
-    <div class="footer">
-      <div class="footer-content">
-          <div class="details-title">
-            <h2>Donite s.r.o.</h2>
+  </div>
+</div>
+<div class="footer">
+  <div class="footer-content">
+      <div class="details-title">
+        <h2>ROSSOA s.r.o.</h2>
+        <a class="contacts-anchor" id="contacts">Our services anchor</a>
+
+      </div>
+      <div class="details-text">
+        <a href="tel:+420775280578">tel.: +420 775 280 578</a>
+        <a href="mailto:info@urobto.cz">info@kaceni-rossoa.cz</a>
+        <p>IČO: &#8203;27094847&#8203;</p>
+        <p>DIČ: CZ27094847</p>
+        <p>Na pěnkavce 620</p>
+        <p>417 12 Proboštov</p>
+        <p>Česká republika</p>
+        <div class="qr-container">
+          <div class="qr-field" onclick="window.open('/rossoa.vcf','_top' ); return false;">
+            <img class="click" src="img/click.jpg">
+            <img class="qr" src="img/qrcode.png">
           </div>
-          <div class="details-text">
-            <a href="tel:+420703330703">tel.: +420 703 330 703</a>
-            <a href="mailto:info@donite.cz">email: info@donite.cz</a>
-            <p>IČO: 07081235</p>
-            <p>DIČ: CZ07081235</p>
-            <p>Haškova 420</p>
-            <p>415 10 Teplice</p>
-            <p>Česká republika</p>
-            <div class="qr-container">
-              <div class="qr-field" onclick="window.open('/donite.vcf','_top' ); return false;">
-                <img class="click" src="img/click.jpg">
-                <img class="qr" src="img/qr.svg">
-              </div>
-              <div class="qr-field">
-              </div>
-              <p>Přidat do kontaktů</p>
-            </div>
+          <div class="qr-field">
           </div>
-          <div class="operating-hours-title">
-            <h2>Provozní doba</h2>
-          </div>
-          <div class="operating-hours-text">
-            <p>Po.: 08:00–16:00</p>
-            <p>Út.: 08:00–16:00</p>
-            <p>St.: 08:00–16:00</p>
-            <p>Čt.: 08:00–16:00</p>
-            <p>Pá.: 08:00–16:00</p>
-            <p>So.: zavřeno</p>
-            <p>Ne.: zavřeno</p>
-            <div class="abas-container">
-              <img class="abas-logo" onclick="window.open('http://www.abascr.cz/'); return false;" src="img/abas.png">
-              <p>Jsme členové</p>
-            </div>
-          </div>
-          <div class="links-title">
-            <h2>Odkazy</h2>
-          </div>
-          <div class="links-text">
-            <a onclick="topFunction()">Obchodní podmínky</a>
-            <a href="gdpr.html">Ochrana osobních údajů</a>
-          </div>
-        <div class="copyright">
-          <p>© 2025 Donite s.r.o.</p>
+          <p>Přidat do kontaktů</p>
         </div>
       </div>
+      <div class="operating-hours-title">
+        <h2>Provozní doba</h2>
+      </div>
+      <div class="operating-hours-text">
+        <p>Po.-Pá.: 08:00-16:00</p>
+        <p>So.-Ne.: po dohodě</p>
+      </div>
+      <div class="links-title">
+        <h2>Odkazy</h2>
+      </div>
+      <div class="links-text">
+        <a onclick="topFunction()" id="gDPRButton">Obchodní podmínky</a>
+        <a href="gdpr.html">Ochrana osobních údajů</a>
+      </div>
+      <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2528.2677974777453!2d13.86801207641785!3d50.67785397163645!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47098f11288d7cc1%3A0x84a858668f04b5ab!2surobro%20s.r.o.!5e0!3m2!1sen!2scz!4v1748599848718!5m2!1sen!2scz" width="auto" height="auto" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="copyright">
+      <p>© 2025 ROSSOA s.r.o.</p>
     </div>
-    <button onclick="topFunction()" id="upBtn">
-      <img class ="up-image" src="img/up.png">
-    </button>
-    <script src="src/shared.js"></script>
-  <script>
+  </div>
+</div>
+<div class="popup" id="popupWindow">
+  <div class="popup-container">
+    <img src="img/sweep.png"> 
+    <h3>Děkujeme!</h3>
+    <P>Vaše objednávka byla odeslána!</P>
+    <button onclick="popupClose()">Zavřít</button>
+  </div>
+</div>
+<button onclick="topFunction()" id="upBtn"><img id="upBtnImg" src="img/up.svg"></button>
+<button onclick="window.location='tel:+420775280578'" id="phoneBtn">
+  <img id="phoneGif" src="img/phone.gif">
+</button>
+<script>
     let mybuttonup = document.getElementById("myBtnUp");
     function topFunction() {
       document.body.scrollTop = 0; 
@@ -180,7 +176,7 @@
     window.onscroll = function() {scrollFunction()};
     function scrollFunction() {
       if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-        mybutton.style.display = "flex";
+        mybutton.style.display = "block";
       } else {
         mybutton.style.display = "none";
       }
@@ -189,6 +185,63 @@
       document.body.scrollTop = 0; 
       document.documentElement.scrollTop = 0;
     }
+    slideIndex = 0;
+    showSlides();
+    function showSlides() {
+    let i;
+    let slides = document.getElementsByClassName("aboutus-container-slider-image");
+    for (i = 0; i < slides.length; i++) {
+      slides[i].style.opacity = "0";  
+    }
+    slideIndex++;
+    if (slideIndex > slides.length) {slideIndex = 1};
+    slides[slideIndex-1].style.opacity = "1";  
+    setTimeout(showSlides, 5000);
+    }
+   let popup = document.getElementById("popupWindow");
+    function popupClose() {
+      popup.classList.remove('open');
+    }
+    $(document).ready(function () {
+      $("form").submit(function (event) {
+        event.preventDefault() 
+        var name = document.getElementById("name").value
+        var surname = document.getElementById("surname").value
+        var company = document.getElementById("company").value
+        var email = document.getElementById("email").value
+        var phone = document.getElementById("phone").value
+        var adress = document.getElementById("adress").value
+        var description = document.getElementById("description").value
+        var result = document.getElementById("popupWindow") 
+        $.post("send-email.php", {name:name, surname:surname, company:company, email:email, phone:phone, adress:adress, description:description}, function (data){
+          console.log(data)
+          result.classList.add('open')
+          form.reset()
+        })
+      })
+    })
+    let autocomplete;
+    function initAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+    document.getElementById('adress'),
+    {
+      componentRestrictions: {'country': ['CZ']},
+      fields: ["place_id", "geometry", "name", "formatted_address"]
+    });
+    }
+    function scrollToServices() {
+    document.querySelector('#ourservices').scrollIntoView({behavior: 'smooth'});
+    }
+    function scrollToOrder() {
+    document.querySelector('#order').scrollIntoView({behavior: 'smooth'});
+    }
+    function scrollToContacts() {
+    document.querySelector('#contacts').scrollIntoView({behavior: 'smooth'});
+    }
+    window.addEventListener('resize', () => {
+    const sticky = document.querySelector('.header');
+    sticky.style.transform = 'translateZ(0)';
+    });
   </script>
   </body>
-</html>     
+</html>

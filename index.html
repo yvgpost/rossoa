@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html lang="cs">
   <head>
-    <link rel="stylesheet" href="src/style.css?v=2.0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="canonical" href="https://kaceni-rossoa.cz/">
+    <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="929b76c0-5767-43ce-9b0f-2631624d7700"  type="text/javascript"></script>    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-M5QKJ7TZ');</script>
+    <!-- End Google Tag Manager -->
+    <link rel="stylesheet" href="style.css?v=1.15">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta content="width=device-width, initial-scale=1" name="viewport" http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
@@ -10,48 +19,45 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=M+PLUS+Rounded+1c&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <title>Donite</title>
-    <link rel="icon" type="image/x-icon" href="img/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>ROSSOA s.r.o.</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon-32x32.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvi444PCKSoe6C-weeCPfdmLqYmFQCrUA&libraries=places&callback=initAutocomplete" async defer></script>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M5QKJ7TZ"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="header">
       <div class="header-content">
         <div class="logo-section">
-          <img class="logo" onclick="window.open('index.html','_top' ); return false;" src="img/logo.svg">
-          <img id="sargo" class="logo" onclick="window.open('https://www.sargo.be','_blank' ); return false;" src="img/sargo2.svg">
+          <img src="img/logo1.svg">
+          <div class="logo-text">
+            <p>ROSSOA s.r.o.</p>
+            <p>Rizikové kácení stromů</p>
+            <p id="mobileSlogan">po celém Ústeckém kraji</p>
+          </div>          
         </div>
         <div class="menu-lang">
           <div class="menu-section">
-            <a onclick="topFunction()" id="myBtnUp">Domů</a>
-            <div class="store-button">
-              <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků&searr;</a>
-              <div class="menu-section-dropdown">
-                  <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
-                  <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace zápachu</a>
-                  <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
-              </div>
-            </div>
-            <a onclick="downFunction()">Kontakty</a>
+            <a onclick="topFunction()" id="myBtnUp">ÚVOD</a>
+            <a onclick="scrollToServices();">NAŠE SLUŽBY</a>
+            <a onclick="scrollToOrder();">OBJEDNAT</a>
+            <a onclick="downFunction()">KONTAKTY</a>
           </div>
-          <div class="cart" onclick="window.open('cart.html','_top' ); return false;">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h1.5L9 16m0 0h8m-8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8.5-3h9.25L19 7H7.312"/>
-            </svg> 
-            <span id="cartAmount">0</span>           
-          </div>        
+          <div class="upper-contacts">
+            <p class="upper-contacts-text">Po celém Ústeckém kraji</p>
+            <a class="phone-link" href="tel:+420775280578">+420 775 280 578</a>
+          </div>
         </div>
         <div class="menu-lang-mobile" id="menuLang">
           <div class="menu-section-mobile">
-            <a onclick="topFunction(); myFunction(); toggleHamburger();" id="myBtnUp">Domů</a>
-            <a onclick="window.open('store.html','_top' ); return false;">Prodej výrobků</a>
-              <a class="subcategory" onclick="window.open('store.html#cleaning','_top' ); return false;">Čisticí prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#desinfection','_top' ); return false;">Dezinfekční prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#caring','_top' ); return false;">Ošetřující prostředky</a>
-              <a class="subcategory" onclick="window.open('store.html#odor','_top' ); return false;">Ekologická neutralizace<br> zápachu</a>
-              <a class="subcategory" onclick="window.open('store.html#special','_top' ); return false;">Speciální prostředky</a>
-            <a onclick="downFunction(); myFunction(); toggleHamburger();" id="myBtnDowm">Kontakty</a>
+            <a onclick="topFunction(); myFunction(); toggleHamburger();" id="myBtnUp">ÚVOD</a>
+            <a onclick="myFunction(); toggleHamburger(); scrollToServices();">NAŠE SLUŽBY</a>
+            <a onclick="myFunction(); toggleHamburger(); scrollToOrder();">OBJEDNAT</a>
+            <a onclick="myFunction(); toggleHamburger(); scrollToContacts()">KONTAKTY</a>
           </div>
         </div>
         <div class="mobile-menu-btn">
@@ -64,156 +70,171 @@
       </div>
     </div>
     <div class="aboutus">
-        <div class="aboutus-title">
-          <p>O nás</p>
-        </div>
         <div class="aboutus-container">
-          <div class="aboutus-container-video">  
-              <video loop autoplay muted playsinline>
-                <source src="img/conveyor.mp4" type="video/mp4">
-              </video>
+          <div class="aboutus-container-video">
+            <video loop autoplay muted playsinline>
+              <source src="img/arborist_new.mp4" type="video/mp4">
+            </video>
+            <p class="aboutus-container-video-text-part1">Svěřte rizikové kácení zkušeným a vyškoleným profesionálům</p>
           </div>
-            <div class="aboutus-container-text">
-              <p>Donite s.r.o. od roku 2018 vyrábí čistící a dezinfekční přípravky pro profesionální úklid, vhodné pro oblast ústavů sociální péče, domovů důchodců, nemocnic, škol, nákupních center, wellness resortů, aquaparků, potravinářského průmyslu, atd.</p>
-              <p>Naše výrobky mají ty nejlepší vlastnosti, které dokážou uspokojit požadavky zákazníků, splňují nejvyšší standardy kvality a vyznačují se také dostupnou cenou.</p>
+          <div class="aboutus-container-slider">
+            <div class="aboutus-container-slider-image" id="slideOne">
+              <p>Odstraňování mrtvých nebo umírajících větví stromů</p>
             </div>
-        </div>
-    </div>
-    <div class="products-section" id="productsList">
-      <div class="products-title">
-        <p>Naše produkty</p>
-      </div>
-      <div class="products-grid">
-        <div class="product-all" onclick="window.open('store.html#cleaning','_top' ); return false;">
-          <div class="product-cell-left">
-            <h2>Čisticí prostředky</h2>
-            <p>Odstranění nečistot z různých povrchů, jako jsou podlahy, nábytek nebo nádobí</p>
-          </div>
-          <div class="product-cell-right">
-              <img src="img/cleaningagents.jpg">
-          </div>
-        </div>
-        <div class="product-all" onclick="window.open('store.html#desinfection','_top' ); return false;">
-          <div class="product-cell-left" id="desinfectionDescription">
-            <h2>Dezinfekční prostředky</h2>
-            <p>Ničení bakterií a virů, které mohou být zdraví škodlivé</p>
-          </div>
-          <div class="product-cell-right">
-              <img src="img/desinfectants.jpg">
-          </div>
-        </div>
-        <div class="product-all" onclick="window.open('store.html#caring','_top' ); return false;">
-          <div class="product-cell-left" id="careDescription">
-            <h2>Ošetřující prostředky</h2>
-            <p>Chrání a zachovávají vlastnosti povrchů, na které jsou aplikovány</p>
-          </div>
-          <div class="product-cell-right">
-              <img src="img/care.jpg">
-          </div>
-        </div>
-        <div class="product-all" onclick="window.open('store.html#odor','_top' ); return false;">
-          <div class="product-cell-left" id="combinationDescription">
-            <h2>Ekologická neutralizace zápachu</h2>
-            <p>Snížení a prevence emisí zápachu, odstranění olejů a tuků</p>
-          </div>
-          <div class="product-cell-right">
-              <img src="img/combined.jpg">
-          </div>
-        </div>
-        <div class="product-all" onclick="window.open('store.html#special','_top' ); return false;">
-          <div class="product-cell-left" id="spacDescription">
-            <h2>Speciální prostředky</h2>
-            <p>Odstranění odolných nečistot: rez, vodní kámen a usazeniny</p>
-          </div>
-          <div class="product-cell-right">
-              <img src="img/special.png">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="our-clients">
-      <div class="our-clients-title">
-        <p>Naši klienti</p>
-      </div>
-      <div class="clients">
-        <img onclick="window.open('https://www.fkteplice.cz/'); return false;" src="img/clients/1.png">
-        <img onclick="window.open('https://www.aquacentrum-vrchlabi.cz/'); return false;" src="img/clients/2.png">
-        <img onclick="window.open('https://www.csplitomerice.cz/'); return false;" src="img/clients/3.png">
-        <img onclick="window.open('https://www.czu.cz'); return false;" src="img/clients/4.png">
-        <img onclick="window.open('https://www.kravihora-brno.cz/' ); return false;" src="img/clients/5.png">
-        <img onclick="window.open('https://www.lazne-losiny.cz/' ); return false;" src="img/clients/6.png">
-        <img onclick="window.open('https://www.mariuspedersen.cz/' ); return false;" src="img/clients/7.png">
-        <img onclick="window.open('https://mazubri.cz/' ); return false;" src="img/clients/8.png">
-        <img onclick="window.open('https://www.msul.cz/' ); return false;" src="img/clients/9.png">
-        <img onclick="window.open('https://www.orlenunipetroldoprava.cz/' ); return false;" src="img/clients/10.png">
-        <img onclick="window.open('https://www.sportpe.cz/' ); return false;" src="img/clients/11.png">
-        <img onclick="window.open('https://www.pms-spk.cz/' ); return false;" src="img/clients/12.png">
-        <img onclick="window.open('http://www.sigmaplast.cz/' ); return false;" src="img/clients/13.png">
-        <img onclick="window.open('https://www.sportkrupka.cz/' ); return false;" src="img/clients/14.png">
-        <img onclick="window.open('https://www.sportoviste-tachov.cz/' ); return false;" src="img/clients/15.png">
-        <img onclick="window.open('https://www.snznojmo.cz/' ); return false;" src="img/clients/16.png">
-        <img onclick="window.open('https://www.stezazlin.cz/' ); return false;" src="img/clients/17.png">
-        <img onclick="window.open('https://www.tsunicov.cz/' ); return false;" src="img/clients/18.png">
-        <img onclick="window.open('https://uzenarstvi-jezek.cz/' ); return false;" src="img/clients/19.png">
-        <img onclick="window.open('https://sc-repy.cz/' ); return false;" src="img/clients/20.png">
-      </div>
-    </div>
-    <div class="footer">
-      <div class="footer-content">
-          <div class="details-title">
-            <h2>Donite s.r.o.</h2>
-          </div>
-          <div class="details-text">
-            <a href="tel:+420703330703">tel.: +420 703 330 703</a>
-            <a href="mailto:info@donite.cz">email: info@donite.cz</a>
-            <p>IČO: 07081235</p>
-            <p>DIČ: CZ07081235</p>
-            <p>Haškova 420</p>
-            <p>415 10 Teplice</p>
-            <p>Česká republika</p>
-            <div class="qr-container">
-              <div class="qr-field" onclick="window.open('/donite.vcf','_top' ); return false;">
-                <img class="click" src="img/click.jpg">
-                <img class="qr" src="img/qr.svg">
-              </div>
-              <div class="qr-field">
-              </div>
-              <p>Přidat do kontaktů</p>
+            <div class="aboutus-container-slider-image" id="slideTwo">
+              <p>Zpevnění stromů</p>
             </div>
-          </div>
-          <div class="operating-hours-title">
-            <h2>Provozní doba</h2>
-          </div>
-          <div class="operating-hours-text">
-            <p>Po.: 08:00–16:00</p>
-            <p>Út.: 08:00–16:00</p>
-            <p>St.: 08:00–16:00</p>
-            <p>Čt.: 08:00–16:00</p>
-            <p>Pá.: 08:00–16:00</p>
-            <p>So.: zavřeno</p>
-            <p>Ne.: zavřeno</p>
-            <div class="abas-container">
-              <img class="abas-logo" onclick="window.open('http://www.abascr.cz/'); return false;" src="img/abas.png">
-              <p>Jsme členové</p>
+            <div class="aboutus-container-slider-image" id="slideThree">
+              <p>Péče o stromy a úprava jejich vzhledu</p>
             </div>
+            <div class="aboutus-container-slider-image" id="slideFour">
+              <p>Úklid stromů po bouři</p>
+            </div>
+            <div class="aboutus-container-slider-image" id="slideFive">
+              <p>Odstranění pařezu</p>
           </div>
-          <div class="links-title">
-            <h2>Odkazy</h2>
-          </div>
-          <div class="links-text">
-            <a href="terms.html">Obchodní podmínky</a>
-            <a href="gdpr.html">Ochrana osobních údajů</a>
-          </div>
-        <div class="copyright">
-          <p>© 2025 Donite s.r.o.</p>
-        </div>
       </div>
     </div>
-    <button onclick="topFunction()" id="upBtn">
-      <img class ="up-image" src="img/up.png">
-    </button>
-    <script src="src/shared.js"></script>
-  <script>
+  </div>
+  <div class="contracting">
+      <div class="contracting-container">
+         <div class="contracting-title">
+          <p id="ourServicesTitle">NAŠE SLUŽBY</p>
+        </div>
+        <a class="our-services-anchor" id="ourservices">Our services anchor</a>
+        <div class="contracting-container-section">
+          <img src="img/slide6.jpg"> 
+          <div class="contracting-container-text">
+            <p>&#10097; Rizikové kácení a ořez stromů stromolezeckou technikou s použitím mnoho rozličných stromolezeckých a horolezeckých blokantů, brzd, kladek a dalšího vybavení aby nedošlo k poškození věcí, budov, nebo zeleně pod stromem</p>
+            <p>&#10097; Provádíme výchovné, omlazovací a zdravotní řezy</p>
+          </div>
+        </div>
+        <div class="contracting-container-section">
+          <div class="contracting-container-text" id="section2">
+            <p>&#10097; Pracujeme pro právnické a soukromé osoby v Ústeckém kraji (Ústí nad Labem, Most, Teplice, Děčín aj.)</p>
+            <p>&#10097; Ke každému kácení přistupujeme individuálně a po podrobné analýze stavu stromů a pozemku</p>
+            <p>&#10097; Vždy bereme v úvahu druh stromu, stáří, výšku, rozložení koruny a prostor pod stromem</p>
+          </div>
+          <img id="equipment" src="img/slide7.webp"> 
+        </div>
+        <div class="contracting-container-section">
+          <img src="img/slide8.jpg"> 
+          <div class="contracting-container-text">
+            <p>&#10097; Bez povolení můžeme kácet pouze stromy, které mají ve výšce 130 cm nad zemí obvod menší jak 80 cm, ovocné stromy, vážně poškozené stromy ohrožující zdraví nebo majetek, souvislé porosty keřů nepřesahující plochu 40 m²
+</p>
+            <p>&#10097; V případě potřeby Vám rádi poradíme se získáním povolení</p>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+<div class="contracting" id="orderdiv">
+  <div class="form-container">
+     <div class="contracting-title">
+      <p id="ourServicesTitle">OBJEDNAT</p>
+    </div>
+    <a class="order-anchor" id="order">Order</a>
+    <div class="contracting-form">
+      <div class="contracting-form-container">
+        <p>Máte zájem o naše služby a chcete zjistit jejich cenu ve Vašem případě?<br>Kontaktujte nás ještě dnes!</p>
+      <form class="form" id="form" name="submit-to-google-sheet" action="send-email.php" method="post">
+        <div class="form-fields">
+          <label for="name">Jméno<span class="asterisk">*</span></label>
+          <input type="text" name="name" id="name" required>        
+        </div>
+        <div class="form-fields">
+          <label for="surname">Příjmení</label>
+          <input type="text" name="surname" id="surname">
+        </div>
+        <div class="form-fields">
+          <label for="surname">Společnost</label>
+          <input type="text" name="company" id="company">
+        </div>  
+        <div class="form-fields">
+          <label for="email">E-mail</label>
+          <input type="email" name="email" id="email" placeholder="např. mail@adress.com">
+        </div> 
+        <div class="form-fields" id="phonefield" required>
+          <label for="phone">Telefonní číslo<span class="asterisk">*</span></label>           
+          <input id="phone" type="number" name="phone" placeholder="např. 111 222 333" maxlength="16" minlength="6" pattern="[0-9\-\+\(\)\s]+" required>
+        </div>
+        <div class="form-fields">
+          <label for="adress">Adresa objektu<span class="asterisk">*</span></label>
+          <input type="text" name="adress" id="adress" required placeholder="Zadejte polohu">
+        </div>
+        <div class="form-fields" id="descr">
+          <label for="description">Popis objektu<span class="asterisk">*</span></label>
+          <textarea name="description" id="description" required></textarea>
+        </div>
+        <div class="form-fields" id="checkbox">
+          <input type="checkbox" name="checkbox" id="checkbox" required>
+          <label for="checkbox">
+            <span id="souhlas">Souhlas se zpracováním <br><a href="gdpr.html">osobních&nbsp;údajů</a> a <a href="terms.html">obchodními&nbsp;podmínkami</a></span>
+          </label>
+        </div>
+        <input class="form-fields" type="submit" id="submit" name="submit" value="Odeslat poptávku">
+      </form>
+    </div>
+  </div>
+  </div>
+</div>
+<div class="footer">
+  <div class="footer-content">
+      <div class="details-title">
+        <h2>ROSSOA s.r.o.</h2>
+        <a class="contacts-anchor" id="contacts">Our services anchor</a>
+      </div>
+      <div class="details-text">
+        <a href="tel:+420775280578">tel.: +420 775 280 578</a>
+        <a href="mailto:info@urobto.cz">info@kaceni-rossoa.cz</a>
+        <p>IČO: &#8203;27094847&#8203;</p>
+        <p>DIČ: CZ27094847</p>
+        <p>Na pěnkavce 620</p>
+        <p>417 12 Proboštov</p>
+        <p>Česká republika</p>
+        <div class="qr-container">
+          <div class="qr-field" onclick="window.open('/rossoa.vcf','_top' ); return false;">
+            <img class="click" src="img/click.jpg">
+            <img class="qr" src="img/qrcode.png">
+          </div>
+          <div class="qr-field">
+          </div>
+          <p>Přidat do kontaktů</p>
+        </div>
+      </div>
+      <div class="operating-hours-title">
+        <h2>Provozní doba</h2>
+      </div>
+      <div class="operating-hours-text">
+        <p>Po.-Pá.: 08:00-16:00</p>
+        <p>So.-Ne.: po dohodě</p>
+      </div>
+      <div class="links-title">
+        <h2>Odkazy</h2>
+      </div>
+      <div class="links-text">
+        <a href="terms.html">Obchodní podmínky</a>
+        <a href="gdpr.html">Ochrana osobních údajů</a>
+      </div>
+      <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d40458.854305517685!2d13.763884305953964!3d50.67023151957773!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47098f474c5d35e5%3A0x75a92f7a2e318bef!2zUml6aWtvdsOpIGvDoWNlbsOtIHN0cm9txa8sIFJPU1NPQSBzLnIuby4!5e0!3m2!1sen!2scz!4v1759391145130!5m2!1sen!2scz" width="auto" height="auto" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="copyright">
+      <p>© 2025 ROSSOA s.r.o.</p>
+    </div>
+  </div>
+</div>
+<div class="popup" id="popupWindow">
+  <div class="popup-container">
+    <img src="img/sweep.png"> 
+    <h3>Děkujeme!</h3>
+    <P>Vaše objednávka byla odeslána!</P>
+    <button onclick="popupClose()">Zavřít</button>
+  </div>
+</div>
+<button onclick="topFunction()" id="upBtn"><img id="upBtnImg" src="img/up.svg"></button>
+<button onclick="window.location='tel:+420775280578'" id="phoneBtn">
+  <img id="phoneGif" src="img/phone.gif">
+</button>
+<script>
     let mybuttonup = document.getElementById("myBtnUp");
     function topFunction() {
       document.body.scrollTop = 0; 
@@ -242,7 +263,7 @@
     window.onscroll = function() {scrollFunction()};
     function scrollFunction() {
       if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-        mybutton.style.display = "flex";
+        mybutton.style.display = "block";
       } else {
         mybutton.style.display = "none";
       }
@@ -251,6 +272,63 @@
       document.body.scrollTop = 0; 
       document.documentElement.scrollTop = 0;
     }
+    slideIndex = 0;
+    showSlides();
+    function showSlides() {
+    let i;
+    let slides = document.getElementsByClassName("aboutus-container-slider-image");
+    for (i = 0; i < slides.length; i++) {
+      slides[i].style.opacity = "0";  
+    }
+    slideIndex++;
+    if (slideIndex > slides.length) {slideIndex = 1};
+    slides[slideIndex-1].style.opacity = "1";  
+    setTimeout(showSlides, 5000);
+    }
+   let popup = document.getElementById("popupWindow");
+    function popupClose() {
+      popup.classList.remove('open');
+    }
+    $(document).ready(function () {
+      $("form").submit(function (event) {
+        event.preventDefault() 
+        var name = document.getElementById("name").value
+        var surname = document.getElementById("surname").value
+        var company = document.getElementById("company").value
+        var email = document.getElementById("email").value
+        var phone = document.getElementById("phone").value
+        var adress = document.getElementById("adress").value
+        var description = document.getElementById("description").value
+        var result = document.getElementById("popupWindow") 
+        $.post("send-email.php", {name:name, surname:surname, company:company, email:email, phone:phone, adress:adress, description:description}, function (data){
+          console.log(data)
+          result.classList.add('open')
+          form.reset()
+        })
+      })
+    })
+    let autocomplete;
+    function initAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+    document.getElementById('adress'),
+    {
+      componentRestrictions: {'country': ['CZ']},
+      fields: ["place_id", "geometry", "name", "formatted_address"]
+    });
+    }
+    function scrollToServices() {
+    document.querySelector('#ourservices').scrollIntoView({behavior: 'smooth'});
+    }
+    function scrollToOrder() {
+    document.querySelector('#order').scrollIntoView({behavior: 'smooth'});
+    }
+    function scrollToContacts() {
+    document.querySelector('#contacts').scrollIntoView({behavior: 'smooth'});
+    }
+    window.addEventListener('resize', () => {
+    const sticky = document.querySelector('.header');
+    sticky.style.transform = 'translateZ(0)';
+    });
   </script>
   </body>
-</html>     
+</html>

@@ -1,0 +1,25 @@
+<?php
+  $name = $_POST["name"];
+  $surname = $_POST["surname"];
+  $company = $_POST["company"];
+  $email = $_POST["email"];
+  $phone = $_POST["phone"];
+  $adress = $_POST["adress"];
+  $description = $_POST["description"];
+  $subject = 'Objednávka kácení z kaceni-rossoa.cz';
+ 
+  $mailHeaders = 
+  "\r\n Jméno: " . $name .
+  "\r\n Příjmení: " . $surname .
+  "\r\n Společnost: " . $company .
+  "\r\n E-mail: " . $email . 
+  "\r\n Telefonní číslo: " . $phone . 
+  "\r\n Adresa objektů: " . $adress .
+  "\r\n Popis objektů: " . $description . "\r\n";
+ 
+  $recipient = "info@kaceni-rossoa.cz";
+
+  mail($recipient, $subject, $mailHeaders)
+  or die("Error!");
+?>
+    
