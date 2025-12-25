@@ -17,7 +17,7 @@
   "\r\n Adresa objektů: " . $adress .
   "\r\n Popis objektů: " . $description . "\r\n";
  
-  $recipient = "info@kaceni-rossoa.cz";
+  $recipient = "info@rossoa.cz";
 
   mail($recipient, $subject, $mailHeaders)
   or die("Error!");
