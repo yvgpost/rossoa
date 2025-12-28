@@ -13,7 +13,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,100..900;1,100..900&family=M+PLUS+Rounded+1c&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <title>ROSSOA s.r.o.</title>
-    <link rel="icon" type="image/x-icon" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted'
+      });
+    </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvi444PCKSoe6C-weeCPfdmLqYmFQCrUA&libraries=places&callback=initAutocomplete" async defer></script>
   </head>
@@ -101,7 +113,6 @@
             <p>&#10097; Opravy dešťových vpustí</p>
             <p>&#10097; Lokální opravy dešťových a kanalizačních přípojek</p>
             <p>&#10097; Projektová dokumentace ke kanalizaci</p>
-
           </div>
         </div>
         <div class="contracting-container-section">
@@ -251,7 +262,7 @@
         <a href="terms.html">Obchodní podmínky</a>
         <a href="gdpr.html">Ochrana osobních údajů</a>
       </div>
-      <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d40458.854305517685!2d13.763884305953964!3d50.67023151957773!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47098f474c5d35e5%3A0x75a92f7a2e318bef!2zUml6aWtvdsOpIGvDoWNlbsOtIHN0cm9txa8sIFJPU1NPQSBzLnIuby4!5e0!3m2!1sen!2scz!4v1759391145130!5m2!1sen!2scz" width="auto" height="auto" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2527.8203255606927!2d13.83752347664447!3d50.67023077163495!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47098f716010c9b7%3A0x6b1b6a8711c3591f!2sROSSOA%20s.r.o.!5e0!3m2!1sen!2scz!4v1766947596823!5m2!1sen!2scz" width="auto" height="auto" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       <div class="copyright">
       <p>© 2025 ROSSOA s.r.o.</p>
     </div>
@@ -269,6 +280,17 @@
 <button onclick="window.location='tel:+420775280578'" id="phoneBtn">
   <img id="phoneGif" src="img/phone.gif">
 </button>
+  <div id="cookies" style="display:none;">
+    <div class="cookie-consent-banner" >
+      <div class="cookie-consent-content">
+        <p>Tato webová stránka používá nezbytné, analytické a marketingové soubory cookie.<br>Pro další procházení webu je nutné udělit souhlas s jejich zpracováním.</p>
+        <a id="cookie-accept-btn">Přijmout vše</a>
+      </div>
+    </div>
+  </div>
+    <button id="cookie-revoke-btn" class="cookie-revoke-btn" title="Odvolat souhlas s cookies" style="display:none;">
+      <img src="img/cookie.png">
+    </button>
 <script>
     let mybuttonup = document.getElementById("myBtnUp");
     function topFunction() {
@@ -312,6 +334,7 @@
     function showSlides() {
     let i;
     let slides = document.getElementsByClassName("aboutus-container-slider-image");
+    if (slides.length === 0) return;
     for (i = 0; i < slides.length; i++) {
       slides[i].style.opacity = "0";  
     }
@@ -342,11 +365,119 @@
         })
       })
     })
+ document.addEventListener('DOMContentLoaded', function() {
+  const CONSENT_KEY = 'rossoa_cookie_consent_v1';
+  const CONSENT_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000; // 12 months
+  const GA4_ID = 'G-XXXXXXXXXX'; // GA4 ID
+  const ADS_ID = 'AW-XXXXXXXXXX'; // Google Ads ID
+  function setConsentBannerVisible(visible) {
+    document.getElementById('cookies').style.display = visible ? 'flex' : 'none';
+    document.body.classList.toggle('cookie-locked', visible);
+  }
+  function setRevokeBtnVisible(visible) {
+    const btn = document.getElementById('cookie-revoke-btn');
+    if (!btn) return;
+    btn.style.display = visible ? 'block' : 'none';
+  }
+  function getConsentObj() {
+    try {
+      return JSON.parse(localStorage.getItem(CONSENT_KEY));
+    } catch {
+      return null;
+    }
+  }
+  function hasValidConsent() {
+    const obj = getConsentObj();
+    if (!obj || !obj.acceptedAt) return false;
+    const acceptedAt = new Date(obj.acceptedAt).getTime();
+    const now = Date.now();
+    return (now - acceptedAt) < CONSENT_MAX_AGE_MS;
+  }
+  function grantAllConsent() {
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted',
+      functionality_storage: 'granted',
+      security_storage: 'granted'
+    });
+  }
+  function denyAllConsent() {
+    gtag('consent', 'update', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      functionality_storage: 'granted',
+      security_storage: 'granted'
+    });
+  }
+  function loadScriptOnce(src, id) {
+    if (id && document.getElementById(id)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      if (id) s.id = id;
+      s.async = true;
+      s.defer = true;
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+  async function loadGoogleTags() {
+    if (window.__rossoaGtagLoaded) return;
+    window.__rossoaGtagLoaded = true;
+    const shouldLoadGA = GA4_ID && GA4_ID !== 'G-XXXXXXXXXX';
+    const shouldLoadAds = ADS_ID && ADS_ID !== 'AW-XXXXXXXXXX';
+    if (!shouldLoadGA && !shouldLoadAds) return;
+    const gtagId = shouldLoadGA ? GA4_ID : ADS_ID;
+    await loadScriptOnce(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gtagId)}`, 'gtag-js');
+    gtag('js', new Date());
+    if (shouldLoadGA) gtag('config', GA4_ID);
+    if (shouldLoadAds) gtag('config', ADS_ID);
+  }
+  async function acceptAllCookies() {
+    try {
+      localStorage.setItem(CONSENT_KEY, JSON.stringify({
+        v:1,
+        acceptedAt: new Date().toISOString()
+      }));
+    } catch {}
+    grantAllConsent();
+    await loadGoogleTags();
+    setConsentBannerVisible(false);
+    setRevokeBtnVisible(true);
+  }
+  function revokeConsent() {
+    try { localStorage.removeItem(CONSENT_KEY); } catch {}
+    denyAllConsent();
+    setConsentBannerVisible(true);
+    setRevokeBtnVisible(false);
+  }
+  if (hasValidConsent()) {
+    grantAllConsent();
+    setConsentBannerVisible(false);
+    setRevokeBtnVisible(true);
+    loadGoogleTags();
+  } else {
+    try { localStorage.removeItem(CONSENT_KEY); } catch {}
+    setConsentBannerVisible(true);
+    setRevokeBtnVisible(false);
+  }
+  const acceptBtn = document.getElementById('cookie-accept-btn');
+  const revokeBtn = document.getElementById('cookie-revoke-btn');
+  if (acceptBtn) acceptBtn.onclick = acceptAllCookies;
+  if (revokeBtn) revokeBtn.onclick = revokeConsent;
+});
     let autocomplete;
     function initAutocomplete() {
-    autocomplete = new google.maps.places.Autocomplete(
-    document.getElementById('adress'),
-    {
+    const input = document.getElementById('adress');
+    if (!input) return;
+    if (!window.google || !google.maps || !google.maps.places) return;
+
+    autocomplete = new google.maps.places.Autocomplete(input, {
       componentRestrictions: {'country': ['CZ']},
       fields: ["place_id", "geometry", "name", "formatted_address"]
     });
