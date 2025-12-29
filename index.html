@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="cs">
   <head>
-    <link rel="stylesheet" href="style.css?v=1.0">
+    <link rel="stylesheet" href="style.css?v=1.4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta content="width=device-width, initial-scale=1" name="viewport" http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,10 +26,21 @@
         security_storage: 'granted'
       });
     </script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TM67R7N6');</script>
+    <!-- End Google Tag Manager -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvi444PCKSoe6C-weeCPfdmLqYmFQCrUA&libraries=places&callback=initAutocomplete" async defer></script>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TM67R7N6"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="header">
       <div class="header-content">
         <div class="logo-section">
@@ -127,7 +138,7 @@
         <div class="contracting-container-section">
           <img src="img/slide10.jpg"> 
           <div class="contracting-container-text">
-            <p>&#10097; Ruční výkopové práce včetně prací</p>
+            <p>&#10097; Ruční výkopové práce</p>
             <p>&#10097; Výkopy v extrémně stísněných podmínkách</p>
             <p>&#10097; Mechanické výkopové práce (bagr)</p>
             <p>&#10097; Terénní úpravy</p>
@@ -148,7 +159,6 @@
           <div class="contracting-container-text">
             <p>&#10097; Posekáme i nemožné</p>
             <p>&#10097; Kaceni a prorez stromu stromolezeckou technikou</p>
-            <p>&#10097; Tvarovací a zdravotní řezy</p>
             <p>&#10097; Drceni větví (štepkovani)</p>
             <p>&#10097; Údržba zeleně</p>
             <p>&#10097; Ruční a mechanické sekání travních ploch, parků a zahrad (křovinořez, sekačky, traktor)</p>
@@ -218,6 +228,10 @@
             <span id="souhlas">Souhlas se zpracováním <a href="gdpr.html">osobních&nbsp;údajů</a></span>
           </label>
         </div>
+        <div class="form-fields" style="display:none;">
+           <label for="website_check">Leave this field empty</label>
+           <input type="text" name="website_check" id="website_check" tabindex="-1" autocomplete="off">
+        </div>
         <input class="form-fields" type="submit" id="submit" name="submit" value="Odeslat poptávku">
       </form>
     </div>
@@ -270,10 +284,9 @@
 </div>
 <div class="popup" id="popupWindow">
   <div class="popup-container">
-    <img src="img/sweep.png"> 
     <h3>Děkujeme!</h3>
-    <P>Vaše objednávka byla odeslána!</P>
-    <button onclick="popupClose()">Zavřít</button>
+    <P>Vaše poptávka byla odeslána!</P>
+    <a onclick="popupClose()">Zavřít</a>
   </div>
 </div>
 <button onclick="topFunction()" id="upBtn"><img id="upBtnImg" src="img/up.svg"></button>
@@ -350,6 +363,11 @@
     $(document).ready(function () {
       $("form").submit(function (event) {
         event.preventDefault() 
+        var honeypot = document.getElementById("website_check").value;
+        if (honeypot !== "") {
+            console.log("Bot detected.");
+            return false; // Stop execution
+        }
         var name = document.getElementById("name").value
         var surname = document.getElementById("surname").value
         var company = document.getElementById("company").value
@@ -368,8 +386,6 @@
  document.addEventListener('DOMContentLoaded', function() {
   const CONSENT_KEY = 'rossoa_cookie_consent_v1';
   const CONSENT_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000; // 12 months
-  const GA4_ID = 'G-XXXXXXXXXX'; // GA4 ID
-  const ADS_ID = 'AW-XXXXXXXXXX'; // Google Ads ID
   function setConsentBannerVisible(visible) {
     document.getElementById('cookies').style.display = visible ? 'flex' : 'none';
     document.body.classList.toggle('cookie-locked', visible);
@@ -402,6 +418,7 @@
       functionality_storage: 'granted',
       security_storage: 'granted'
     });
+    window.dataLayer.push({'event': 'consent_update'});
   }
   function denyAllConsent() {
     gtag('consent', 'update', {
@@ -413,31 +430,6 @@
       security_storage: 'granted'
     });
   }
-  function loadScriptOnce(src, id) {
-    if (id && document.getElementById(id)) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      if (id) s.id = id;
-      s.async = true;
-      s.defer = true;
-      s.src = src;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Failed to load: ' + src));
-      document.head.appendChild(s);
-    });
-  }
-  async function loadGoogleTags() {
-    if (window.__rossoaGtagLoaded) return;
-    window.__rossoaGtagLoaded = true;
-    const shouldLoadGA = GA4_ID && GA4_ID !== 'G-XXXXXXXXXX';
-    const shouldLoadAds = ADS_ID && ADS_ID !== 'AW-XXXXXXXXXX';
-    if (!shouldLoadGA && !shouldLoadAds) return;
-    const gtagId = shouldLoadGA ? GA4_ID : ADS_ID;
-    await loadScriptOnce(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gtagId)}`, 'gtag-js');
-    gtag('js', new Date());
-    if (shouldLoadGA) gtag('config', GA4_ID);
-    if (shouldLoadAds) gtag('config', ADS_ID);
-  }
   async function acceptAllCookies() {
     try {
       localStorage.setItem(CONSENT_KEY, JSON.stringify({
@@ -446,7 +438,6 @@
       }));
     } catch {}
     grantAllConsent();
-    await loadGoogleTags();
     setConsentBannerVisible(false);
     setRevokeBtnVisible(true);
   }
@@ -460,7 +451,6 @@
     grantAllConsent();
     setConsentBannerVisible(false);
     setRevokeBtnVisible(true);
-    loadGoogleTags();
   } else {
     try { localStorage.removeItem(CONSENT_KEY); } catch {}
     setConsentBannerVisible(true);

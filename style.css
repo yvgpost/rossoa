@@ -800,7 +800,7 @@ input::-webkit-inner-spin-button {
   display: block;
 }
 .popup-container {
-  background-color:#3B4E21;
+  background-color: rgb(88, 103, 103);
   box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);
   position: absolute;
   top: 0;
@@ -808,21 +808,15 @@ input::-webkit-inner-spin-button {
   right: 0;
   left: 0;
   margin: auto;
-  display: block;
-  padding: 0.5rem;
+  display: flex;
+  place-content: middle;
+  flex-direction: column;
+  padding: 0.5rem 0.5rem 1.5rem 0.5rem;
   box-sizing: border-box;
   width: 25rem;
-  height: 18rem;
+  height: fit-content;
   border-radius: 0.5rem;
   text-align: center;
-}
-.popup-container img {
-  width: 10rem;
-  border-radius: 10%;
-  position: absolute;
-  left: 30%;
-  top: -5rem;
-  background-color: white;
 }
 .popup-container p, h3 {
   color: white;
@@ -830,21 +824,20 @@ input::-webkit-inner-spin-button {
   text-align: center;
 }
 .popup-container h3 {
-  margin-top: 5rem;
+  margin-bottom: 0;
 }
-.popup-container button {
-  width: 15rem;
-  margin: 0 auto;
+.popup-container a {
+  display: block;
+  width: 10rem;
   border: none;
-  background-color:#d6dfb4;
+  background-color: rgb(129, 147, 147);
   border-radius: 0.5rem;
   cursor: pointer;
   font-size: 1.3rem;
   color: white;
-  padding: 1rem 0 1rem 0;
-  margin-top: 1rem;
-  margin-bottom: 2rem;
+  padding: 1rem 2rem 1rem 2rem;
   color: black;
+  margin: 0 auto;
 }
 .popup-container button:active {
   background-color: white;
@@ -1678,65 +1671,6 @@ input::-webkit-inner-spin-button {
   height: 4rem;
 }
   /*Pop up*/
-.popup {
-  background-color: rgba(0, 0, 0, 0.6);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 999;
-}
-.popup-container {
-  background-color:#3B4E21;
-  box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.3);
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  margin: auto;
-  display: block;
-  padding: 0.5rem;
-  box-sizing: border-box;
-  width: 24rem;
-  height: 18rem;
-  border-radius: 0.5rem;
-  text-align: center;
-}
-.popup-container img {
-  width: 10rem;
-  border-radius: 10%;
-  position: absolute;
-  left: 30%;
-  top: -5rem;
-}
-.popup-container p, h3 {
-  color: white;
-  font-size: 1.5rem;
-  text-align: center;
-}
-.popup-container h3 {
-  margin-top: 5rem;
-}
-.popup-container button {
-  width: 15rem;
-  margin: 0 auto;
-  border: none;
-  background-color:#d6dfb4;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 1.3rem;
-  color: white;
-  padding: 1rem 0 1rem 0;
-  margin-top: 1rem;
-  margin-bottom: 2rem;
-  color: black;
-}
-.popup-container button:active {
-  background-color: white;
-  color: black;
-}
 .cookie-consent-content {
   width: 100%;
   display: flex;

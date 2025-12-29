@@ -1,4 +1,8 @@
 <?php
+if (!empty($_POST['website_check'])) {
+    // It's a bot, stop the script
+    die();
+}
   $name = $_POST["name"];
   $surname = $_POST["surname"];
   $company = $_POST["company"];
@@ -6,7 +10,7 @@
   $phone = $_POST["phone"];
   $adress = $_POST["adress"];
   $description = $_POST["description"];
-  $subject = 'Objednávka kácení z kaceni-rossoa.cz';
+  $subject = 'Objednávka z rossoa.cz';
  
   $mailHeaders = 
   "\r\n Jméno: " . $name .
@@ -15,7 +19,7 @@
   "\r\n E-mail: " . $email . 
   "\r\n Telefonní číslo: " . $phone . 
   "\r\n Adresa objektů: " . $adress .
-  "\r\n Popis objektů: " . $description . "\r\n";
+  "\r\n Zpráva: " . $description . "\r\n";
  
   $recipient = "info@rossoa.cz";
 
