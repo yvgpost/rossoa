@@ -197,7 +197,7 @@ video {
   height: 25rem;
   object-fit: cover;
   box-sizing: border-box;
-  background-image: url(img/slide1.jpeg);
+  background-image: url(img/slide1.jpg);
   background-size: cover;
   transition-delay: 0ms;
   background-position: 50% 40%;
@@ -220,7 +220,7 @@ video {
   width: 100%;
   object-fit: cover;
   box-sizing: border-box;
-  background-image: url(img/slide2.jpeg);
+  background-image: url(img/slide2.jpg);
   background-size: cover;
   background-position: 50% 50%;
   transition-delay: 0ms;
@@ -266,7 +266,7 @@ video {
   width: 100%;
   object-fit: cover;
   box-sizing: border-box;
-  background-image: url(img/slide4.webp);
+  background-image: url(img/slide4.jpg);
   background-size: cover;
   background-position: 0% 100%;
   transition-delay: 0ms;
@@ -290,7 +290,7 @@ video {
   width: 100%;
   object-fit: cover;
   box-sizing: border-box;
-  background-image: url(img/slide5.jpeg);
+  background-image: url(img/slide5.jpg);
   background-size: cover;
   background-position: 80% 30%;
   transition-delay: 0ms;
@@ -313,7 +313,7 @@ video {
   width: 100%;
   object-fit: cover;
   box-sizing: border-box;
-  background-image: url(img/slide6.jpeg);
+  background-image: url(img/slide6.jpg);
   background-size: cover;
   background-position: 50% 30%;
   transition-delay: 0ms;

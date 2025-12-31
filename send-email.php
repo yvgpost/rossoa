@@ -1,7 +1,9 @@
 <?php
 if (!empty($_POST['website_check'])) {
-    // It's a bot, stop the script
     die();
+}
+if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['message'])) {
+    die("Error: Please fill in all required fields.");
 }
   $name = $_POST["name"];
   $surname = $_POST["surname"];
