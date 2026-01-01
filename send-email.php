@@ -2,7 +2,7 @@
 if (!empty($_POST['website_check'])) {
     die();
 }
-if (empty($_POST['name']) || empty($_POST['email']) || empty($_POST['message'])) {
+if (empty($_POST['name']) || empty($_POST['phone']) || empty($_POST['description'])) {
     die("Error: Please fill in all required fields.");
 }
   $name = $_POST["name"];
