@@ -362,25 +362,52 @@
     }
     $(document).ready(function () {
       $("form").submit(function (event) {
-        event.preventDefault() 
+        event.preventDefault();
+        var formElement = this; 
+        var submitButton = document.getElementById("submit");
         var honeypot = document.getElementById("website_check").value;
         if (honeypot !== "") {
             console.log("Bot detected.");
-            return false; // Stop execution
+            return false; 
         }
-        var name = document.getElementById("name").value
-        var surname = document.getElementById("surname").value
-        var company = document.getElementById("company").value
-        var email = document.getElementById("email").value
-        var phone = document.getElementById("phone").value
-        var adress = document.getElementById("adress").value
-        var description = document.getElementById("description").value
-        var result = document.getElementById("popupWindow") 
-        $.post("send-email.php", {name:name, surname:surname, company:company, email:email, phone:phone, adress:adress, description:description}, function (data){
-          console.log(data)
-          result.classList.add('open')
-          form.reset()
+        submitButton.disabled = true;
+        submitButton.value = "Odesílám...";
+        var name = document.getElementById("name").value;
+        var surname = document.getElementById("surname").value;
+        var company = document.getElementById("company").value;
+        var email = document.getElementById("email").value;
+        var phone = document.getElementById("phone").value;
+        var adress = document.getElementById("adress").value;
+        var description = document.getElementById("description").value;
+        var result = document.getElementById("popupWindow");
+        $.post("send-email.php", {
+            name: name, 
+            surname: surname, 
+            company: company, 
+            email: email, 
+            phone: phone, 
+            adress: adress, 
+            description: description
         })
+        .done(function (data){
+          setTimeout(function() {
+            console.log(data);
+            result.classList.add('open');
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              'event': 'form_submit_custom'
+            });
+            formElement.reset();
+            submitButton.disabled = false;
+            submitButton.value = "Odeslat poptávku";
+          }, 3000);
+        })
+        .fail(function(xhr, status, error) {
+            console.error("Submission failed:", error);
+            alert("Odeslání se pravděpodobně nezdařilo. Zkontrolujte prosím připojení nebo nás kontaktujte telefonicky.");
+            submitButton.disabled = false;
+            submitButton.value = "Odeslat poptávku";
+        });
       })
     })
  document.addEventListener('DOMContentLoaded', function() {
