@@ -267,9 +267,10 @@ app.get('/materials', requireAuth, async (req, res) => {
         const constructionId = req.query.construction_id;
 
         let query = `
-            SELECT ms.*, c.name as construction_name
+            SELECT ms.*, c.name as construction_name, mt.unit as material_unit
             FROM materials_services ms
             LEFT JOIN constructions c ON ms.construction_id = c.id
+            LEFT JOIN material_types mt ON LOWER(ms.type) = LOWER(mt.name) AND ms.category = 'Material'
         `;
         let params = [];
 
@@ -305,8 +306,9 @@ app.get('/materials', requireAuth, async (req, res) => {
 });
 
 app.post('/materials', requireAuth, async (req, res) => {
-    const { construction_id, date, category, type, type_custom, price } = req.body;
+    const { construction_id, date, category, type, type_custom, new_type_unit, price, quantity } = req.body;
     const finalType = req.body.is_custom_type === 'true' ? type_custom : type;
+    const finalQuantity = category === 'Material' && quantity ? parseFloat(quantity) : null;
     try {
         // Handle custom types - check for archived match first or create new
         if (req.body.is_custom_type === 'true' && finalType) {
@@ -315,7 +317,7 @@ app.post('/materials', requireAuth, async (req, res) => {
                 if (existing.rows.length > 0) {
                     await pool.query('UPDATE material_types SET archived = FALSE WHERE id = $1', [existing.rows[0].id]);
                 } else {
-                    await pool.query('INSERT INTO material_types (name) VALUES ($1)', [finalType]);
+                    await pool.query('INSERT INTO material_types (name, unit) VALUES ($1, $2)', [finalType, new_type_unit || null]);
                 }
             } else if (category === 'Sluzba') {
                 const existing = await pool.query('SELECT id FROM service_types WHERE LOWER(name) = LOWER($1)', [finalType]);
@@ -329,13 +331,13 @@ app.post('/materials', requireAuth, async (req, res) => {
 
         if (req.body.id) {
             await pool.query(
-                `UPDATE materials_services SET construction_id = $1, date = $2, category = $3, type = $4, price = $5 WHERE id = $6`,
-                [construction_id, date, category, finalType, price, req.body.id]
+                `UPDATE materials_services SET construction_id = $1, date = $2, category = $3, type = $4, price = $5, quantity = $6 WHERE id = $7`,
+                [construction_id, date, category, finalType, price, finalQuantity, req.body.id]
             );
         } else {
             await pool.query(
-                'INSERT INTO materials_services (construction_id, date, category, type, price) VALUES ($1, $2, $3, $4, $5)',
-                [construction_id, date, category, finalType, price]
+                'INSERT INTO materials_services (construction_id, date, category, type, price, quantity) VALUES ($1, $2, $3, $4, $5, $6)',
+                [construction_id, date, category, finalType, price, finalQuantity]
             );
         }
         const redirectUrl = construction_id ? `/materials?construction_id=${construction_id}` : '/materials';
@@ -388,7 +390,7 @@ app.get('/api/search-types', requireAuth, async (req, res) => {
     try {
         if (category === 'Material') {
             const result = await pool.query(
-                'SELECT id, name FROM material_types WHERE archived = TRUE AND LOWER(name) LIKE LOWER($1) ORDER BY name',
+                'SELECT id, name, unit FROM material_types WHERE archived = TRUE AND LOWER(name) LIKE LOWER($1) ORDER BY name',
                 [`%${q}%`]
             );
             res.json(result.rows);
@@ -408,7 +410,7 @@ app.get('/api/search-types', requireAuth, async (req, res) => {
 });
 
 app.post('/settings/material-types', requireAuth, async (req, res) => {
-    const { new_type, delete_type, restore_type } = req.body;
+    const { new_type, new_unit, delete_type, restore_type } = req.body;
     try {
         if (new_type) {
             // Check if exists (active or archived)
@@ -419,7 +421,7 @@ app.post('/settings/material-types', requireAuth, async (req, res) => {
                     await pool.query('UPDATE material_types SET archived = FALSE WHERE id = $1', [existing.rows[0].id]);
                 }
             } else {
-                await pool.query('INSERT INTO material_types (name) VALUES ($1)', [new_type]);
+                await pool.query('INSERT INTO material_types (name, unit) VALUES ($1, $2)', [new_type, new_unit || null]);
             }
         }
         if (delete_type) {

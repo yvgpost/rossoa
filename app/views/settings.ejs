@@ -34,7 +34,7 @@
             <ul class="settings-list">
                 <% materialTypes.filter(t => !t.archived).forEach(function(t) { %>
                     <li>
-                        <span><%= t.name %></span>
+                        <span><%= t.name %><% if (t.unit) { %> <small>(<%= t.unit %>)</small><% } %></span>
                         <form method="POST" action="/settings/material-types" style="display: inline;">
                             <input type="hidden" name="delete_type" value="<%= t.id %>">
                             <button type="submit" class="btn btn-small btn-danger">Archivovat</button>
@@ -70,6 +70,17 @@
             <% } %>
             <form method="POST" action="/settings/material-types" class="add-form">
                 <input type="text" name="new_type" placeholder="Nový typ materiálu" required>
+                <select name="new_unit" required>
+                    <option value="">-- Jednotka --</option>
+                    <option value="ks">ks (kusy)</option>
+                    <option value="m">m (metr)</option>
+                    <option value="m²">m²</option>
+                    <option value="m³">m³</option>
+                    <option value="kg">kg (kilogram)</option>
+                    <option value="t">t (tuna)</option>
+                    <option value="l">l (litr)</option>
+                    <option value="bm">bm (běžný metr)</option>
+                </select>
                 <button type="submit" class="btn btn-primary">Přidat</button>
             </form>
         </div>

@@ -83,12 +83,36 @@
                             <input type="text" id="type_custom" name="type_custom" placeholder="Začněte psát..." list="archived-suggestions" autocomplete="off" oninput="checkArchivedSuggestions(this)">
                             <datalist id="archived-suggestions"></datalist>
                             <small id="type_help" class="help-text"></small>
+                            <div id="new_unit_wrapper" style="display: none;">
+                                <label for="new_type_unit">Jednotka nového materiálu</label>
+                                <select id="new_type_unit" name="new_type_unit" onchange="syncUnitDisplay()">
+                                    <option value="">-- Vyberte jednotku --</option>
+                                    <option value="ks">ks (kusy)</option>
+                                    <option value="m">m (metr)</option>
+                                    <option value="m²">m²</option>
+                                    <option value="m³">m³</option>
+                                    <option value="kg">kg (kilogram)</option>
+                                    <option value="t">t (tuna)</option>
+                                    <option value="l">l (litr)</option>
+                                    <option value="bm">bm (běžný metr)</option>
+                                </select>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                <div id="quantity_unit_row" class="form-row" style="display: none;">
+                    <div class="form-group">
+                        <label for="quantity">Množství</label>
+                        <input type="number" id="quantity" name="quantity" step="0.001">
+                    </div>
+                    <div class="form-group">
+                        <label>Jednotka</label>
+                        <input type="text" id="unit_display" readonly style="background: var(--bg-secondary, #f5f5f5); cursor: default;">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="price">Cena (Kč)</label>
+                        <label for="price" id="price_label">Cena (Kč)</label>
                         <input type="number" id="price" name="price" step="0.01" min="0.01" required>
                     </div>
                 </div>
@@ -107,20 +131,26 @@
                         <th>Datum</th>
                         <th>Kategorie</th>
                         <th>Typ</th>
+                        <th>Množství</th>
                         <th>Cena</th>
                         <th>Akce</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% materials.forEach(function(m) { %>
+                        <%
+                            const hasQty = m.category === 'Material' && m.quantity != null;
+                            const qtyDisplay = hasQty ? parseFloat(m.quantity).toLocaleString('cs-CZ') + (m.material_unit ? '\u00a0' + m.material_unit : '') : '—';
+                        %>
                         <tr>
                             <td><%= m.construction_name %></td>
                             <td><%= new Date(m.date).toLocaleDateString('cs-CZ') %></td>
                             <td><%= m.category %></td>
                             <td><%= m.type %></td>
+                            <td><%= qtyDisplay %></td>
                             <td><%= parseFloat(m.price).toLocaleString('cs-CZ') %> Kč</td>
                             <td class="actions">
-                                <button class="btn btn-small btn-edit" onclick="editMaterial(<%= m.id %>, <%= m.construction_id %>, '<%= m.date ? m.date.toLocaleDateString('en-CA') : '' %>', '<%= m.category %>', '<%= m.type %>', <%= m.price %>)">Upravit</button>
+                                <button class="btn btn-small btn-edit" onclick="editMaterial(<%= m.id %>, <%= m.construction_id %>, '<%= m.date ? m.date.toLocaleDateString('en-CA') : '' %>', '<%= m.category %>', '<%= m.type %>', <%= m.price %>, <%- m.quantity != null ? m.quantity : 'null' %>)">Upravit</button>
                                 <form method="POST" action="/materials/delete/<%= m.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat?');">
                                     <button type="submit" class="btn btn-small btn-danger">Smazat</button>
                                 </form>
@@ -135,31 +165,64 @@
     </main>
 
     <script>
-        const materialTypes = <%- JSON.stringify(materialTypes.map(t => t.name)) %>;
+        const materialTypes = <%- JSON.stringify(materialTypes.map(t => ({ name: t.name, unit: t.unit || '' }))) %>;
+        const materialTypeNames = materialTypes.map(t => t.name);
         const serviceTypes = <%- JSON.stringify(serviceTypes.map(t => t.name)) %>;
         let currentCategory = '';
 
         function updateTypeOptions() {
             const category = document.getElementById('category').value;
             const typeSelect = document.getElementById('type');
-            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            const quantityUnitRow = document.getElementById('quantity_unit_row');
+            const priceLabel = document.getElementById('price_label');
             currentCategory = category;
 
-            typeCustomWrapper.style.display = 'none';
-            typeSelect.style.display = 'block';
+            resetCustomTypeInput();
+            resetQuantityUnit();
             typeSelect.innerHTML = '<option value="">-- Vyberte typ --</option>';
 
             if (category === 'Material') {
                 materialTypes.forEach(t => {
-                    typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+                    typeSelect.innerHTML += `<option value="${t.name}">${t.name}</option>`;
                 });
                 typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+                priceLabel.textContent = 'Cena (Kč)';
             } else if (category === 'Sluzba') {
                 serviceTypes.forEach(t => {
                     typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
                 });
                 typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+                priceLabel.textContent = 'Cena (Kč)';
             }
+
+            quantityUnitRow.style.display = 'none';
+        }
+
+        function resetCustomTypeInput() {
+            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            const typeCustom = document.getElementById('type_custom');
+            const isCustom = document.getElementById('is_custom_type');
+            const helpText = document.getElementById('type_help');
+            const newUnitWrapper = document.getElementById('new_unit_wrapper');
+
+            typeCustomWrapper.style.display = 'none';
+            typeCustom.value = '';
+            helpText.textContent = '';
+            helpText.style.color = '';
+            document.getElementById('archived-suggestions').innerHTML = '';
+            archivedSuggestions = [];
+            isCustom.value = 'false';
+            newUnitWrapper.style.display = 'none';
+            document.getElementById('new_type_unit').value = '';
+        }
+
+        function resetQuantityUnit() {
+            document.getElementById('quantity').value = '';
+            document.getElementById('unit_display').value = '';
+        }
+
+        function syncUnitDisplay() {
+            document.getElementById('unit_display').value = document.getElementById('new_type_unit').value;
         }
 
         function handleTypeChange(select) {
@@ -167,9 +230,11 @@
             const typeCustom = document.getElementById('type_custom');
             const isCustom = document.getElementById('is_custom_type');
             const helpText = document.getElementById('type_help');
+            const quantityUnitRow = document.getElementById('quantity_unit_row');
+            const unitDisplay = document.getElementById('unit_display');
+            const newUnitWrapper = document.getElementById('new_unit_wrapper');
 
             if (select.value === '__new__') {
-                // Show custom input, keep dropdown active so user can go back
                 typeCustomWrapper.style.display = 'block';
                 typeCustom.value = '';
                 typeCustom.placeholder = 'Začněte psát...';
@@ -179,14 +244,39 @@
                 archivedSuggestions = [];
                 isCustom.value = 'true';
                 typeCustom.focus();
-            } else {
-                // User picked a real type or blank — hide custom input
+
+                if (currentCategory === 'Material') {
+                    newUnitWrapper.style.display = 'block';
+                    quantityUnitRow.style.display = '';
+                    unitDisplay.value = '';
+                } else {
+                    newUnitWrapper.style.display = 'none';
+                    quantityUnitRow.style.display = 'none';
+                }
+            } else if (select.value) {
                 typeCustomWrapper.style.display = 'none';
                 typeCustom.value = '';
                 helpText.textContent = '';
                 helpText.style.color = '';
                 archivedSuggestions = [];
                 isCustom.value = 'false';
+                newUnitWrapper.style.display = 'none';
+
+                if (currentCategory === 'Material') {
+                    const typeData = materialTypes.find(t => t.name === select.value);
+                    unitDisplay.value = typeData ? (typeData.unit || '') : '';
+                    quantityUnitRow.style.display = '';
+                }
+            } else {
+                typeCustomWrapper.style.display = 'none';
+                typeCustom.value = '';
+                helpText.textContent = '';
+                helpText.style.color = '';
+                archivedSuggestions = [];
+                isCustom.value = 'false';
+                newUnitWrapper.style.display = 'none';
+                quantityUnitRow.style.display = 'none';
+                unitDisplay.value = '';
             }
         }
 
@@ -207,9 +297,9 @@
                 return;
             }
 
-            // Check against active types first (already loaded client-side)
-            const activeTypes = category === 'Material' ? materialTypes : serviceTypes;
-            const activeMatch = activeTypes.find(t => t.toLowerCase() === input.value.trim().toLowerCase());
+            // Check against active types first
+            const activeNames = category === 'Material' ? materialTypeNames : serviceTypes;
+            const activeMatch = activeNames.find(t => t.toLowerCase() === input.value.trim().toLowerCase());
             if (activeMatch) {
                 datalist.innerHTML = '';
                 archivedSuggestions = [];
@@ -256,26 +346,39 @@
                     typeCustom.focus();
                     return false;
                 }
-                // Block if matches an active type
-                const activeTypes = currentCategory === 'Material' ? materialTypes : serviceTypes;
-                const activeMatch = activeTypes.find(t => t.toLowerCase() === inputValue.toLowerCase());
+                const activeNames = currentCategory === 'Material' ? materialTypeNames : serviceTypes;
+                const activeMatch = activeNames.find(t => t.toLowerCase() === inputValue.toLowerCase());
                 if (activeMatch) {
                     alert(`Typ "${activeMatch}" již existuje. Prosím vyberte ho z rozevíracího seznamu.`);
                     typeCustom.focus();
                     return false;
                 }
-                // Block if matches an archived type (must pick from suggestions)
                 const archivedMatch = archivedSuggestions.find(a => a.toLowerCase() === inputValue.toLowerCase());
                 if (archivedMatch) {
                     alert('Zvolili jste archivovaný typ. Prosím vyberte ho z návrhů.');
                     return false;
                 }
+                if (currentCategory === 'Material' && !document.getElementById('new_type_unit').value) {
+                    alert('Prosím vyberte jednotku pro nový typ materiálu.');
+                    return false;
+                }
             }
+
+            if (currentCategory === 'Material' && document.getElementById('quantity_unit_row').style.display !== 'none') {
+                const qty = document.getElementById('quantity').value;
+                if (!qty || parseFloat(qty) <= 0) {
+                    alert('Prosím zadejte množství.');
+                    document.getElementById('quantity').focus();
+                    return false;
+                }
+            }
+
             return true;
         }
 
         function showAddMaterialForm() {
             document.getElementById('materialForm').style.display = 'block';
+            document.getElementById('materialForm').querySelector('h3').textContent = 'Nový materiál/služba';
             document.getElementById('date').value = new Date().toLocaleDateString('en-CA');
         }
 
@@ -284,49 +387,66 @@
             location.reload();
         }
 
-        function editMaterial(id, construction_id, date, category, type, price) {
+        function editMaterial(id, construction_id, date, category, type, price, quantity) {
             const form = document.getElementById('materialForm');
             form.style.display = 'block';
-
-            // Change title
             form.querySelector('h3').textContent = 'Upravit materiál/službu';
 
             document.getElementById('form_id').value = id;
             document.getElementById('construction_id').value = construction_id;
             document.getElementById('date').value = date ? date.split('T')[0] : '';
             document.getElementById('price').value = price;
+            document.getElementById('price_label').textContent = 'Cena (Kč)';
 
-            // Set category and update type options
             document.getElementById('category').value = category;
-            updateTypeOptionsForEdit(category, type);
+            updateTypeOptionsForEdit(category, type, quantity);
         }
 
-        function updateTypeOptionsForEdit(category, selectedType) {
+        function updateTypeOptionsForEdit(category, selectedType, quantity) {
             const typeSelect = document.getElementById('type');
             const typeCustomWrapper = document.getElementById('custom_type_wrapper');
             const typeCustom = document.getElementById('type_custom');
+            const quantityUnitRow = document.getElementById('quantity_unit_row');
+            const unitDisplay = document.getElementById('unit_display');
             currentCategory = category;
 
             typeCustomWrapper.style.display = 'none';
-            typeSelect.style.display = 'block';
+            document.getElementById('new_unit_wrapper').style.display = 'none';
             typeSelect.innerHTML = '<option value="">-- Vyberte typ --</option>';
 
-            const allTypes = category === 'Material' ? materialTypes : serviceTypes;
-            allTypes.forEach(t => {
-                typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
-            });
+            if (category === 'Material') {
+                materialTypes.forEach(t => {
+                    typeSelect.innerHTML += `<option value="${t.name}">${t.name}</option>`;
+                });
+            } else {
+                serviceTypes.forEach(t => {
+                    typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+                });
+            }
             typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
 
-            // Check if selected type exists
-            if (allTypes.includes(selectedType)) {
+            const allNames = category === 'Material' ? materialTypeNames : serviceTypes;
+
+            if (allNames.includes(selectedType)) {
                 typeSelect.value = selectedType;
+                if (category === 'Material') {
+                    const typeData = materialTypes.find(t => t.name === selectedType);
+                    unitDisplay.value = typeData ? (typeData.unit || '') : '';
+                    quantityUnitRow.style.display = '';
+                    document.getElementById('quantity').value = quantity != null ? quantity : '';
+                }
             } else {
-                // Type not in active list - show as custom
                 typeSelect.value = '';
                 typeCustomWrapper.style.display = 'block';
                 typeCustom.value = selectedType;
-                // Search for archived versions
-                fetchArchivedForEdit(selectedType, category);
+                document.getElementById('is_custom_type').value = 'true';
+                if (category === 'Material') {
+                    quantityUnitRow.style.display = '';
+                    document.getElementById('quantity').value = quantity != null ? quantity : '';
+                    fetchArchivedForEdit(selectedType, category);
+                } else {
+                    fetchArchivedForEdit(selectedType, category);
+                }
             }
         }
 
@@ -342,6 +462,13 @@
                     opt.value = r.name;
                     datalist.appendChild(opt);
                 });
+                // Auto-fill unit for archived material type
+                if (category === 'Material' && results.length > 0) {
+                    const match = results.find(r => r.name.toLowerCase() === type.toLowerCase());
+                    if (match && match.unit) {
+                        document.getElementById('unit_display').value = match.unit;
+                    }
+                }
             } catch (e) {
                 console.error('Failed to fetch archived for edit');
             }
