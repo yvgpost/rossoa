@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materiály a služby - Rossoa Tracker</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials" class="active">Materiály</a></li>
+                <li><a href="/works">Práce</a></li>
+                <li><a href="/workers">Zaměstnanci</a></li>
+                <li><a href="/settings">Nastavení</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Materiály a služby</h1>
+            <button class="btn btn-primary" onclick="showAddMaterialForm()">Přidat materiál/službu</button>
+        </div>
+
+        <div class="filters">
+            <label for="filterConstruction">Filtrovat podle stavby:</label>
+            <select id="filterConstruction" onchange="window.location.href = '/materials?construction_id=' + this.value">
+                <option value="">Všechny stavby</option>
+                <% constructions.forEach(function(c) { %>
+                    <option value="<%= c.id %>" <%= selectedConstruction == c.id ? 'selected' : '' %>><%= c.name %></option>
+                <% }); %>
+            </select>
+            <% if (selectedConstruction) { %>
+                <a href="/materials" class="btn btn-small">Zrušit filtr</a>
+            <% } %>
+        </div>
+
+        <div id="materialForm" class="form-panel" style="display: none;">
+            <h3>Nový materiál/služba</h3>
+            <form method="POST" action="/materials" onsubmit="return validateMaterialForm()">
+                <input type="hidden" name="id" id="form_id">
+                <input type="hidden" name="is_custom_type" id="is_custom_type" value="false">
+                <input type="hidden" id="selected_archived_id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="construction_id">Stavba</label>
+                        <select id="construction_id" name="construction_id" required>
+                            <option value="">-- Vyberte stavbu --</option>
+                            <% constructions.forEach(function(c) { %>
+                                <option value="<%= c.id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Datum</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Kategorie</label>
+                        <select id="category" name="category" required onchange="updateTypeOptions()">
+                            <option value="">-- Vyberte kategorii --</option>
+                            <option value="Material">Materiál</option>
+                            <option value="Sluzba">Služba</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Typ</label>
+                        <select id="type" name="type" required onchange="handleTypeChange(this)">
+                            <option value="">-- Vyberte typ --</option>
+                        </select>
+                        <div id="custom_type_wrapper" style="display: none;">
+                            <input type="text" id="type_custom" name="type_custom" placeholder="Začněte psát..." list="archived-suggestions" autocomplete="off" oninput="checkArchivedSuggestions(this)">
+                            <datalist id="archived-suggestions"></datalist>
+                            <small id="type_help" class="help-text"></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Cena (Kč)</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Uložit</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideMaterialForm()">Zrušit</button>
+                </div>
+            </form>
+        </div>
+
+        <% if (materials.length > 0) { %>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Stavba</th>
+                        <th>Datum</th>
+                        <th>Kategorie</th>
+                        <th>Typ</th>
+                        <th>Cena</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% materials.forEach(function(m) { %>
+                        <tr>
+                            <td><%= m.construction_name %></td>
+                            <td><%= new Date(m.date).toLocaleDateString('cs-CZ') %></td>
+                            <td><%= m.category %></td>
+                            <td><%= m.type %></td>
+                            <td><%= parseFloat(m.price).toLocaleString('cs-CZ') %> Kč</td>
+                            <td class="actions">
+                                <button class="btn btn-small btn-edit" onclick="editMaterial(<%= m.id %>, <%= m.construction_id %>, '<%= m.date ? m.date.toLocaleDateString('en-CA') : '' %>', '<%= m.category %>', '<%= m.type %>', <%= m.price %>)">Upravit</button>
+                                <form method="POST" action="/materials/delete/<%= m.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat?');">
+                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="empty-state">Žádné materiály nejsou přidány.</p>
+        <% } %>
+    </main>
+
+    <script>
+        const materialTypes = <%- JSON.stringify(materialTypes.map(t => t.name)) %>;
+        const serviceTypes = <%- JSON.stringify(serviceTypes.map(t => t.name)) %>;
+        let currentCategory = '';
+
+        function updateTypeOptions() {
+            const category = document.getElementById('category').value;
+            const typeSelect = document.getElementById('type');
+            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            currentCategory = category;
+
+            typeCustomWrapper.style.display = 'none';
+            typeSelect.style.display = 'block';
+            typeSelect.innerHTML = '<option value="">-- Vyberte typ --</option>';
+
+            if (category === 'Material') {
+                materialTypes.forEach(t => {
+                    typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+                });
+                typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+            } else if (category === 'Sluzba') {
+                serviceTypes.forEach(t => {
+                    typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+                });
+                typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+            }
+        }
+
+        function handleTypeChange(select) {
+            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            const typeCustom = document.getElementById('type_custom');
+            const isCustom = document.getElementById('is_custom_type');
+            const helpText = document.getElementById('type_help');
+
+            if (select.value === '__new__') {
+                // Show custom input, keep dropdown active so user can go back
+                typeCustomWrapper.style.display = 'block';
+                typeCustom.value = '';
+                typeCustom.placeholder = 'Začněte psát...';
+                helpText.textContent = '';
+                helpText.style.color = '';
+                document.getElementById('archived-suggestions').innerHTML = '';
+                archivedSuggestions = [];
+                isCustom.value = 'true';
+                typeCustom.focus();
+            } else {
+                // User picked a real type or blank — hide custom input
+                typeCustomWrapper.style.display = 'none';
+                typeCustom.value = '';
+                helpText.textContent = '';
+                helpText.style.color = '';
+                archivedSuggestions = [];
+                isCustom.value = 'false';
+            }
+        }
+
+        let archivedSearchTimeout;
+        let archivedSuggestions = [];
+
+        function checkArchivedSuggestions(input) {
+            clearTimeout(archivedSearchTimeout);
+            const category = currentCategory;
+            const datalist = document.getElementById('archived-suggestions');
+            const helpText = document.getElementById('type_help');
+
+            if (input.value.length < 2) {
+                datalist.innerHTML = '';
+                archivedSuggestions = [];
+                helpText.textContent = '';
+                helpText.style.color = '';
+                return;
+            }
+
+            // Check against active types first (already loaded client-side)
+            const activeTypes = category === 'Material' ? materialTypes : serviceTypes;
+            const activeMatch = activeTypes.find(t => t.toLowerCase() === input.value.trim().toLowerCase());
+            if (activeMatch) {
+                datalist.innerHTML = '';
+                archivedSuggestions = [];
+                helpText.textContent = `Typ "${activeMatch}" již existuje. Vyberte ho z rozevíracího seznamu výše.`;
+                helpText.style.color = 'var(--danger, #dc3545)';
+                return;
+            } else {
+                helpText.style.color = '';
+            }
+
+            archivedSearchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/search-types?q=${encodeURIComponent(input.value)}&category=${category}`);
+                    const results = await response.json();
+                    datalist.innerHTML = '';
+                    archivedSuggestions = results.map(r => r.name);
+
+                    if (results.length > 0) {
+                        input.placeholder = 'Vyberte existující nebo zadejte nový';
+                        helpText.textContent = 'Poznámka: zadáváte hodnotu, která odpovídá archivované položce. Můžete zvolit návrh nebo pokračovat.';
+                        results.forEach(r => {
+                            const opt = document.createElement('option');
+                            opt.value = r.name;
+                            datalist.appendChild(opt);
+                        });
+                    } else {
+                        input.placeholder = 'Zadejte nový typ';
+                        helpText.textContent = '';
+                        archivedSuggestions = [];
+                    }
+                } catch (e) {
+                    console.error('Failed to search archived types');
+                }
+            }, 300);
+        }
+
+        function validateMaterialForm() {
+            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            const typeCustom = document.getElementById('type_custom');
+
+            if (typeCustomWrapper.style.display !== 'none') {
+                const inputValue = typeCustom.value.trim();
+                if (!inputValue) {
+                    typeCustom.focus();
+                    return false;
+                }
+                // Block if matches an active type
+                const activeTypes = currentCategory === 'Material' ? materialTypes : serviceTypes;
+                const activeMatch = activeTypes.find(t => t.toLowerCase() === inputValue.toLowerCase());
+                if (activeMatch) {
+                    alert(`Typ "${activeMatch}" již existuje. Prosím vyberte ho z rozevíracího seznamu.`);
+                    typeCustom.focus();
+                    return false;
+                }
+                // Block if matches an archived type (must pick from suggestions)
+                const archivedMatch = archivedSuggestions.find(a => a.toLowerCase() === inputValue.toLowerCase());
+                if (archivedMatch) {
+                    alert('Zvolili jste archivovaný typ. Prosím vyberte ho z návrhů.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function showAddMaterialForm() {
+            document.getElementById('materialForm').style.display = 'block';
+            document.getElementById('date').value = new Date().toLocaleDateString('en-CA');
+        }
+
+        function hideMaterialForm() {
+            document.getElementById('materialForm').style.display = 'none';
+            location.reload();
+        }
+
+        function editMaterial(id, construction_id, date, category, type, price) {
+            const form = document.getElementById('materialForm');
+            form.style.display = 'block';
+
+            // Change title
+            form.querySelector('h3').textContent = 'Upravit materiál/službu';
+
+            document.getElementById('form_id').value = id;
+            document.getElementById('construction_id').value = construction_id;
+            document.getElementById('date').value = date ? date.split('T')[0] : '';
+            document.getElementById('price').value = price;
+
+            // Set category and update type options
+            document.getElementById('category').value = category;
+            updateTypeOptionsForEdit(category, type);
+        }
+
+        function updateTypeOptionsForEdit(category, selectedType) {
+            const typeSelect = document.getElementById('type');
+            const typeCustomWrapper = document.getElementById('custom_type_wrapper');
+            const typeCustom = document.getElementById('type_custom');
+            currentCategory = category;
+
+            typeCustomWrapper.style.display = 'none';
+            typeSelect.style.display = 'block';
+            typeSelect.innerHTML = '<option value="">-- Vyberte typ --</option>';
+
+            const allTypes = category === 'Material' ? materialTypes : serviceTypes;
+            allTypes.forEach(t => {
+                typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+            typeSelect.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+
+            // Check if selected type exists
+            if (allTypes.includes(selectedType)) {
+                typeSelect.value = selectedType;
+            } else {
+                // Type not in active list - show as custom
+                typeSelect.value = '';
+                typeCustomWrapper.style.display = 'block';
+                typeCustom.value = selectedType;
+                // Search for archived versions
+                fetchArchivedForEdit(selectedType, category);
+            }
+        }
+
+        async function fetchArchivedForEdit(type, category) {
+            try {
+                const response = await fetch(`/api/search-types?q=${encodeURIComponent(type)}&category=${category}`);
+                const results = await response.json();
+                const datalist = document.getElementById('archived-suggestions');
+                datalist.innerHTML = '';
+                archivedSuggestions = results.map(r => r.name);
+                results.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.name;
+                    datalist.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Failed to fetch archived for edit');
+            }
+        }
+    </script>
+</body>
+</html>

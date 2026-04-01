@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nastavení - Rossoa Tracker</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials">Materiály</a></li>
+                <li><a href="/works">Práce</a></li>
+                <li><a href="/workers">Zaměstnanci</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Nastavení</h1>
+        </div>
+
+        <div class="settings-section">
+            <h3>Typy materiálů</h3>
+            <ul class="settings-list">
+                <% materialTypes.filter(t => !t.archived).forEach(function(t) { %>
+                    <li>
+                        <span><%= t.name %></span>
+                        <form method="POST" action="/settings/material-types" style="display: inline;">
+                            <input type="hidden" name="delete_type" value="<%= t.id %>">
+                            <button type="submit" class="btn btn-small btn-danger">Archivovat</button>
+                        </form>
+                        <% if (!t.used) { %>
+                            <form method="POST" action="/settings/material-types/delete/<%= t.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ?');">
+                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                            </form>
+                        <% } %>
+                    </li>
+                <% }); %>
+            </ul>
+            <% const archivedMaterials = materialTypes.filter(t => t.archived); %>
+            <% if (archivedMaterials.length > 0) { %>
+                <h4>Archivované materiály</h4>
+                <ul class="settings-list archived">
+                    <% archivedMaterials.forEach(function(t) { %>
+                        <li>
+                            <span class="archived-name"><%= t.name %></span>
+                            <form method="POST" action="/settings/material-types" style="display: inline;">
+                                <input type="hidden" name="restore_type" value="<%= t.id %>">
+                                <button type="submit" class="btn btn-small btn-primary">Obnovit</button>
+                            </form>
+                            <% if (!t.used) { %>
+                                <form method="POST" action="/settings/material-types" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ <%= t.name %>?');">
+                                    <input type="hidden" name="hard_delete_type" value="<%= t.id %>">
+                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                                </form>
+                            <% } %>
+                        </li>
+                    <% }); %>
+                </ul>
+            <% } %>
+            <form method="POST" action="/settings/material-types" class="add-form">
+                <input type="text" name="new_type" placeholder="Nový typ materiálu" required>
+                <button type="submit" class="btn btn-primary">Přidat</button>
+            </form>
+        </div>
+
+        <div class="settings-section">
+            <h3>Typy služeb</h3>
+            <ul class="settings-list">
+                <% serviceTypes.filter(t => !t.archived).forEach(function(t) { %>
+                    <li>
+                        <span><%= t.name %></span>
+                        <form method="POST" action="/settings/service-types" style="display: inline;">
+                            <input type="hidden" name="delete_type" value="<%= t.id %>">
+                            <button type="submit" class="btn btn-small btn-danger">Archivovat</button>
+                        </form>
+                        <% if (!t.used) { %>
+                            <form method="POST" action="/settings/service-types/delete/<%= t.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ?');">
+                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                            </form>
+                        <% } %>
+                    </li>
+                <% }); %>
+            </ul>
+            <% const archivedServices = serviceTypes.filter(t => t.archived); %>
+            <% if (archivedServices.length > 0) { %>
+                <h4>Archivované služby</h4>
+                <ul class="settings-list archived">
+                    <% archivedServices.forEach(function(t) { %>
+                        <li>
+                            <span class="archived-name"><%= t.name %></span>
+                            <form method="POST" action="/settings/service-types" style="display: inline;">
+                                <input type="hidden" name="restore_type" value="<%= t.id %>">
+                                <button type="submit" class="btn btn-small btn-primary">Obnovit</button>
+                            </form>
+                            <% if (!t.used) { %>
+                                <form method="POST" action="/settings/service-types" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ <%= t.name %>?');">
+                                    <input type="hidden" name="hard_delete_type" value="<%= t.id %>">
+                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                                </form>
+                            <% } %>
+                        </li>
+                    <% }); %>
+                </ul>
+            <% } %>
+            <form method="POST" action="/settings/service-types" class="add-form">
+                <input type="text" name="new_type" placeholder="Nový typ služby" required>
+                <button type="submit" class="btn btn-primary">Přidat</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Přehled - Rossoa Tracker</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/" class="active">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials">Materiály</a></li>
+                <li><a href="/works">Práce</a></li>
+                <li><a href="/workers">Zaměstnanci</a></li>
+                <li><a href="/settings">Nastavení</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Přehled</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value"><%= constructionsCount %></div>
+                <div class="stat-label">Stavby celkem</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= activeWorkers %></div>
+                <div class="stat-label">Aktivní zaměstnanci</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= workersCount %></div>
+                <div class="stat-label">Zaměstnanci celkem</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Nejnovější stavby</h2>
+            <% if (recentConstructions.length > 0) { %>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Název</th>
+                            <th>Zákazník</th>
+                            <th>Stav</th>
+                            <th>Cena</th>
+                            <th>Náklady</th>
+                            <th>Zisk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentConstructions.forEach(function(c) { %>
+                            <tr>
+                                <td><%= c.name %></td>
+                                <td><%= c.customer || '-' %></td>
+                                <td><span class="badge badge-<%= c.state === 'Finished' ? 'success' : c.state === 'In progress' ? 'primary' : 'secondary' %>"><%= c.state %></span></td>
+                                <td><%= parseFloat(c.price).toLocaleString('cs-CZ') %> Kč</td>
+                                <td><%= parseFloat(c.total_expenses || 0).toLocaleString('cs-CZ') %> Kč</td>
+                                <td class="<%= (parseFloat(c.price) - parseFloat(c.total_expenses || 0)) >= 0 ? 'text-success' : 'text-danger' %>">
+                                    <%= (parseFloat(c.price) - parseFloat(c.total_expenses || 0)).toLocaleString('cs-CZ') %> Kč
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p class="empty-state">Žádné stavby nejsou vytvořeny.</p>
+            <% } %>
+            <a href="/constructions" class="btn btn-primary">Všechny stavby</a>
+        </div>
+    </main>
+</body>
+</html>

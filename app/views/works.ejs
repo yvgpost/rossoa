@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práce - Rossoa Tracker</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials">Materiály</a></li>
+                <li><a href="/works" class="active">Práce</a></li>
+                <li><a href="/workers">Zaměstnanci</a></li>
+                <li><a href="/settings">Nastavení</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Práce</h1>
+            <button class="btn btn-primary" onclick="showAddWorkForm()">Přidat práci</button>
+        </div>
+
+        <div class="filters">
+            <label for="filterConstruction">Filtrovat podle stavby:</label>
+            <select id="filterConstruction" onchange="window.location.href = '/works?construction_id=' + this.value">
+                <option value="">Všechny stavby</option>
+                <% constructions.forEach(function(c) { %>
+                    <option value="<%= c.id %>" <%= selectedConstruction == c.id ? 'selected' : '' %>><%= c.name %></option>
+                <% }); %>
+            </select>
+            <% if (selectedConstruction) { %>
+                <a href="/works" class="btn btn-small">Zrušit filtr</a>
+            <% } %>
+        </div>
+
+        <div id="workForm" class="form-panel" style="display: none;">
+            <h3>Nová práce</h3>
+            <form method="POST" action="/works">
+                <input type="hidden" name="id" id="work_form_id" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="construction_id">Stavba</label>
+                        <select id="construction_id" name="construction_id" required>
+                            <option value="">-- Vyberte stavbu --</option>
+                            <% constructions.forEach(function(c) { %>
+                                <option value="<%= c.id %>"><%= c.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Datum</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Typ práce</label>
+                        <input type="text" id="type" name="type" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="worker_id">Zaměstnanec</label>
+                        <select id="worker_id" name="worker_id">
+                            <option value="">-- Vyberte zaměstnance --</option>
+                            <% workers.forEach(function(w) { %>
+                                <option value="<%= w.id %>"><%= w.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Cena (Kč)</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0.01" value="" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Uložit</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideWorkForm()">Zrušit</button>
+                </div>
+            </form>
+        </div>
+
+        <% if (works.length > 0) { %>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Stavba</th>
+                        <th>Datum</th>
+                        <th>Typ práce</th>
+                        <th>Zaměstnanec</th>
+                        <th>Cena</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% works.forEach(function(w) { %>
+                        <tr>
+                            <td><%= w.construction_name %></td>
+                            <td><%= new Date(w.date).toLocaleDateString('cs-CZ') %></td>
+                            <td><%= w.type %></td>
+                            <td><%= w.worker_name || '-' %></td>
+                            <td><%= parseFloat(w.price).toLocaleString('cs-CZ') %> Kč</td>
+                            <td class="actions">
+                                <button class="btn btn-small btn-edit" onclick="editWork(<%= w.id %>, <%= w.construction_id %>, '<%= w.date ? w.date.toLocaleDateString('en-CA') : '' %>', '<%= w.type %>', <%= w.worker_id || 'null' %>, '<%= w.worker_name || '' %>', '<%= w.construction_name || '' %>', <%= w.price %>)">Upravit</button>
+                                <form method="POST" action="/works/delete/<%= w.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat?');">
+                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="empty-state">Žádné práce nejsou přidány.</p>
+        <% } %>
+    </main>
+
+    <script>
+        function showAddWorkForm() {
+            document.getElementById('workForm').style.display = 'block';
+            document.getElementById('date').value = new Date().toLocaleDateString('en-CA');
+        }
+
+        function hideWorkForm() {
+            document.getElementById('workForm').style.display = 'none';
+            location.reload();
+        }
+
+        function editWork(id, construction_id, date, type, worker_id, worker_name, construction_name, price) {
+            const form = document.getElementById('workForm');
+            form.style.display = 'block';
+            form.querySelector('h3').textContent = 'Upravit práci';
+            document.getElementById('work_form_id').value = id;
+            document.getElementById('date').value = date;
+            document.getElementById('type').value = type;
+            document.getElementById('price').value = price;
+
+            // Set construction - check if exists in dropdown, otherwise add temporarily
+            const constructionSelect = document.getElementById('construction_id');
+            const constructionOption = Array.from(constructionSelect.options).find(o => o.value == construction_id);
+            if (constructionOption) {
+                constructionSelect.value = construction_id;
+            } else if (construction_name) {
+                const opt = new Option(construction_name, construction_id, true, true);
+                constructionSelect.add(opt);
+            }
+
+            // Set worker - check if exists in dropdown, otherwise add temporarily
+            const workerSelect = document.getElementById('worker_id');
+            const workerOption = Array.from(workerSelect.options).find(o => o.value == worker_id);
+            if (workerOption) {
+                workerSelect.value = worker_id;
+            } else if (worker_name) {
+                const opt = new Option(worker_name, worker_id, true, true);
+                workerSelect.add(opt);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Rossoa Tracker' %></title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <% if (typeof username !== 'undefined' && username) { %>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials">Materiály</a></li>
+                <li><a href="/works">Práce</a></li>
+                <li><a href="/workers">Zaměstnanci</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <% } %>
+
+    <main class="container">
+        <%- body %>
+    </main>
+</body>
+</html>

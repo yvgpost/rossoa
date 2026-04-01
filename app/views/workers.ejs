@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaměstnanci - Rossoa Tracker</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Rossoa Tracker</a>
+            <ul class="nav-menu">
+                <li><a href="/">Přehled</a></li>
+                <li><a href="/constructions">Stavby</a></li>
+                <li><a href="/materials">Materiály</a></li>
+                <li><a href="/works">Práce</a></li>
+                <li><a href="/workers" class="active">Zaměstnanci</a></li>
+                <li><a href="/settings">Nastavení</a></li>
+                <li class="nav-user">
+                    <span><%= username %></span>
+                    <a href="/logout" class="btn-logout">Odhlásit</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Zaměstnanci</h1>
+            <button class="btn btn-primary" onclick="document.getElementById('workerForm').style.display = document.getElementById('workerForm').style.display === 'none' ? 'block' : 'block'">Přidat zaměstnance</button>
+        </div>
+
+        <div id="workerForm" class="form-panel" style="display: none;">
+            <h3>Nový zaměstnanec</h3>
+            <form method="POST" action="/workers">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Jméno</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">Stav</label>
+                        <select id="state" name="state">
+                            <option value="Zamestnan">Zaměstnan</option>
+                            <option value="Propusten">Propusten</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Uložit</button>
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('workerForm').style.display = 'none'">Zrušit</button>
+                </div>
+            </form>
+        </div>
+
+        <% if (workers.length > 0) { %>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Jméno</th>
+                        <th>Stav</th>
+                        <th>Počet prací</th>
+                        <th>Vytvořen</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% workers.forEach(function(w) { %>
+                        <tr class="<%= w.state === 'Propusten' ? 'row-archived' : '' %>">
+                            <td><%= w.name %></td>
+                            <td>
+                                <span class="badge badge-<%= w.state === 'Zamestnan' ? 'success' : 'danger' %>">
+                                    <%= w.state %>
+                                </span>
+                            </td>
+                            <td><%= w.work_count %></td>
+                            <td><%= w.created_at ? new Date(w.created_at).toLocaleDateString('cs-CZ') : '-' %></td>
+                            <td class="actions">
+                                <button class="btn btn-small btn-edit" onclick="editWorker(<%= w.id %>, '<%= w.name %>', '<%= w.state %>')">Upravit</button>
+                                <form method="POST" action="/workers/delete/<%= w.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat tohoto zaměstnance?');">
+                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="empty-state">Žádní zaměstnanci nejsou vytvořeni.</p>
+        <% } %>
+    </main>
+
+    <script>
+        function editWorker(id, name, state) {
+            const form = document.getElementById('workerForm');
+            form.style.display = 'block';
+            form.innerHTML = `
+                <h3>Upravit zaměstnance</h3>
+                <form method="POST" action="/workers">
+                    <input type="hidden" name="id" value="${id}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Jméno</label>
+                            <input type="text" id="name" name="name" value="${name}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">Stav</label>
+                            <select id="state" name="state">
+                                <option value="Zamestnan" ${state === 'Zamestnan' ? 'selected' : ''}>Zaměstnan</option>
+                                <option value="Propusten" ${state === 'Propusten' ? 'selected' : ''}>Propusten</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Uložit</button>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('workerForm').style.display = 'none'; location.reload();">Zrušit</button>
+                    </div>
+                </form>
+            `;
+        }
+    </script>
+</body>
+</html>
