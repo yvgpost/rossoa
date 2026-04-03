@@ -56,6 +56,16 @@ CREATE INDEX idx_works_construction ON works(construction_id);
 CREATE INDEX idx_works_worker ON works(worker_id);
 CREATE INDEX idx_workers_state ON workers(state);
 
+-- Passkey credentials table
+CREATE TABLE IF NOT EXISTS passkey_credentials (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    credential_id TEXT UNIQUE NOT NULL,
+    public_key TEXT NOT NULL,
+    counter BIGINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Insert default admin user (password: admin123)
 -- Password will be hashed when the app starts if not exists
 INSERT INTO users (username, password) VALUES ('admin', '$2b$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')

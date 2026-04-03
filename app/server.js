@@ -1,13 +1,32 @@
 require('dotenv').config();
+
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+    console.error('FATAL: SESSION_SECRET must be set in production');
+    process.exit(1);
+}
+
+const crypto = require('crypto');
 const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const {
+    generateRegistrationOptions,
+    verifyRegistrationResponse,
+    generateAuthenticationOptions,
+    verifyAuthenticationResponse,
+} = require('@simplewebauthn/server');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const rpID = process.env.RP_ID || 'localhost';
+const rpName = 'Rossoa Tracker';
+const origin = process.env.ORIGIN || `http://localhost:${port}`;
 
 // Database connection
 const pool = new Pool({
@@ -16,6 +35,15 @@ const pool = new Pool({
     database: process.env.DB_NAME || 'rossoa_tracker',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres'
+});
+
+// Security
+app.use(helmet({ contentSecurityPolicy: false }));
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: 'Příliš mnoho pokusů o přihlášení, zkuste to prosím znovu za 15 minut.'
 });
 
 // Middleware
@@ -360,8 +388,8 @@ app.post('/materials/delete/:id', requireAuth, async (req, res) => {
 
 // ============ SETTINGS ROUTES ============
 
-app.get('/settings', requireAuth, async (_req, res) => {
-    const [materialTypes, serviceTypes] = await Promise.all([
+app.get('/settings', requireAuth, async (req, res) => {
+    const [materialTypes, serviceTypes, passkeys] = await Promise.all([
         pool.query(`
             SELECT mt.*, EXISTS(
                 SELECT 1 FROM materials_services WHERE LOWER(type) = LOWER(mt.name)
@@ -373,11 +401,13 @@ app.get('/settings', requireAuth, async (_req, res) => {
                 SELECT 1 FROM materials_services WHERE LOWER(type) = LOWER(st.name)
             ) as used
             FROM service_types st ORDER BY name
-        `)
+        `),
+        pool.query('SELECT id, created_at FROM passkey_credentials WHERE user_id = $1 ORDER BY created_at DESC', [req.session.userId]),
     ]);
     res.render('settings', {
         materialTypes: materialTypes.rows,
-        serviceTypes: serviceTypes.rows
+        serviceTypes: serviceTypes.rows,
+        passkeys: passkeys.rows,
     });
 });
 
@@ -585,6 +615,137 @@ app.post('/works/delete/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ============ PASSKEY ROUTES ============
+
+// Generate registration options (user must be logged in)
+app.get('/auth/passkey/register-options', requireAuth, async (req, res) => {
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
+        const user = userResult.rows[0];
+
+        const existingCreds = await pool.query(
+            'SELECT credential_id FROM passkey_credentials WHERE user_id = $1', [user.id]
+        );
+
+        const options = await generateRegistrationOptions({
+            rpName,
+            rpID,
+            userID: Buffer.from(user.id.toString()),
+            userName: user.username,
+            attestationType: 'none',
+            excludeCredentials: existingCreds.rows.map(c => ({ id: c.credential_id, type: 'public-key' })),
+            authenticatorSelection: { userVerification: 'required', residentKey: 'required' },
+        });
+
+        req.session.registrationChallenge = options.challenge;
+        await new Promise((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
+        res.json(options);
+    } catch (err) {
+        console.error('Passkey register options error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Verify and store registration
+app.post('/auth/passkey/register-verify', requireAuth, async (req, res) => {
+    try {
+        const expectedChallenge = req.session.registrationChallenge;
+        if (!expectedChallenge) return res.status(400).json({ error: 'No challenge found' });
+
+        const { verified, registrationInfo } = await verifyRegistrationResponse({
+            response: req.body,
+            expectedChallenge,
+            expectedOrigin: origin,
+            expectedRPID: rpID,
+        });
+
+        if (verified && registrationInfo) {
+            const { credential } = registrationInfo;
+            await pool.query(
+                'INSERT INTO passkey_credentials (user_id, credential_id, public_key, counter) VALUES ($1, $2, $3, $4) ON CONFLICT (credential_id) DO UPDATE SET counter = $4',
+                [req.session.userId, credential.id, Buffer.from(credential.publicKey).toString('base64'), credential.counter]
+            );
+            delete req.session.registrationChallenge;
+            res.json({ verified: true });
+        } else {
+            res.status(400).json({ verified: false });
+        }
+    } catch (err) {
+        console.error('Passkey register verify error:', err);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// Generate authentication options (public)
+app.get('/auth/passkey/login-options', async (req, res) => {
+    try {
+        const options = await generateAuthenticationOptions({ rpID, userVerification: 'required' });
+        req.session.authChallenge = options.challenge;
+        await new Promise((resolve, reject) => req.session.save(err => err ? reject(err) : resolve()));
+        res.json(options);
+    } catch (err) {
+        console.error('Passkey login options error:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Verify authentication and create session
+app.post('/auth/passkey/login-verify', async (req, res) => {
+    try {
+        const expectedChallenge = req.session.authChallenge;
+        if (!expectedChallenge) return res.status(400).json({ error: 'No challenge found' });
+
+        const credResult = await pool.query(
+            `SELECT pc.*, u.id as uid, u.username
+             FROM passkey_credentials pc
+             JOIN users u ON pc.user_id = u.id
+             WHERE pc.credential_id = $1`,
+            [req.body.id]
+        );
+
+        if (credResult.rows.length === 0) return res.status(400).json({ error: 'Credential not found' });
+
+        const cred = credResult.rows[0];
+
+        const { verified, authenticationInfo } = await verifyAuthenticationResponse({
+            response: req.body,
+            expectedChallenge,
+            expectedOrigin: origin,
+            expectedRPID: rpID,
+            credential: {
+                id: cred.credential_id,
+                publicKey: Buffer.from(cred.public_key, 'base64'),
+                counter: parseInt(cred.counter),
+            },
+        });
+
+        if (verified) {
+            await pool.query('UPDATE passkey_credentials SET counter = $1 WHERE credential_id = $2',
+                [authenticationInfo.newCounter, cred.credential_id]);
+            delete req.session.authChallenge;
+            req.session.userId = cred.uid;
+            req.session.username = cred.username;
+            res.json({ verified: true });
+        } else {
+            res.status(400).json({ verified: false });
+        }
+    } catch (err) {
+        console.error('Passkey login verify error:', err);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// Delete a passkey
+app.post('/auth/passkey/delete/:id', requireAuth, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM passkey_credentials WHERE id = $1 AND user_id = $2',
+            [req.params.id, req.session.userId]);
+    } catch (err) {
+        console.error('Delete passkey error:', err);
+    }
+    res.redirect('/settings');
+});
+
 // Initialize default admin user on startup
 async function initAdmin() {
     try {
@@ -602,10 +763,28 @@ async function initAdmin() {
     }
 }
 
+async function initPasskeyTable() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS passkey_credentials (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                credential_id TEXT UNIQUE NOT NULL,
+                public_key TEXT NOT NULL,
+                counter BIGINT DEFAULT 0,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+    } catch (err) {
+        console.error('Could not create passkey_credentials table:', err);
+    }
+}
+
 // Start server
 app.listen(port, () => {
     console.log(`rossoa Tracker running on port ${port}`);
     initAdmin();
+    initPasskeyTable();
 });
 
 module.exports = app;

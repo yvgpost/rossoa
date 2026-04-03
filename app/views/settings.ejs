@@ -30,6 +30,32 @@
         </div>
 
         <div class="settings-section">
+            <h3>Passkey (Face ID / Touch ID)</h3>
+            <p class="help-text">Zaregistrujte svůj iPhone nebo Mac pro přihlášení bez hesla.</p>
+
+            <div id="passkey-message" class="alert" style="display:none;"></div>
+
+            <% if (typeof passkeys !== 'undefined' && passkeys.length > 0) { %>
+                <ul class="settings-list">
+                    <% passkeys.forEach(function(pk) { %>
+                        <li>
+                            <span>🔑 Passkey zaregistrován <%= new Date(pk.created_at).toLocaleDateString('cs-CZ') %></span>
+                            <form method="POST" action="/auth/passkey/delete/<%= pk.id %>" style="display:inline;" onsubmit="return confirm('Opravdu chcete smazat tento passkey?');">
+                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
+                            </form>
+                        </li>
+                    <% }); %>
+                </ul>
+            <% } else { %>
+                <p class="empty-state" style="margin: 0.5rem 0 1rem;">Žádný passkey není zaregistrován.</p>
+            <% } // end passkeys check %>
+
+            <button type="button" class="btn btn-primary" id="registerPasskeyBtn" onclick="registerPasskey()">
+                Přidat passkey
+            </button>
+        </div>
+
+        <div class="settings-section">
             <h3>Typy materiálů</h3>
             <ul class="settings-list">
                 <% materialTypes.filter(t => !t.archived).forEach(function(t) { %>
@@ -130,5 +156,47 @@
             </form>
         </div>
     </main>
+
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+    <script>
+        async function registerPasskey() {
+            const btn = document.getElementById('registerPasskeyBtn');
+            const msg = document.getElementById('passkey-message');
+            msg.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Čekám na ověření…';
+
+            try {
+                const optRes = await fetch('/auth/passkey/register-options');
+                const options = await optRes.json();
+
+                const attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+
+                const verRes = await fetch('/auth/passkey/register-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(attResp),
+                });
+                const result = await verRes.json();
+
+                if (result.verified) {
+                    msg.className = 'alert alert-success';
+                    msg.textContent = 'Passkey úspěšně zaregistrován!';
+                    msg.style.display = 'block';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error('Ověření selhalo');
+                }
+            } catch (err) {
+                msg.className = 'alert alert-error';
+                msg.textContent = err.name === 'NotAllowedError'
+                    ? 'Registrace byla zrušena.'
+                    : 'Registrace passkey selhala. Zkuste to znovu.';
+                msg.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Přidat passkey';
+            }
+        }
+    </script>
 </body>
 </html>

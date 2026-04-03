@@ -140,6 +140,37 @@ h2, h3 {
     background-color: #d63050;
 }
 
+.btn-passkey {
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    margin-bottom: 16px;
+}
+
+.btn-passkey:hover {
+    background-color: #16213e;
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #aaa;
+    font-size: 0.85rem;
+    margin: 0 0 16px;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+}
+
+.login-divider span {
+    padding: 0 10px;
+}
+
 .btn-secondary {
     background-color: #6c757d;
     color: white;

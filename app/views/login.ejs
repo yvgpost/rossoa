@@ -12,9 +12,16 @@
             <h1>Rossoa Tracker</h1>
             <p class="login-subtitle">Přihlaste se</p>
 
-            <% if (error) { %>
+            <% if (typeof error !== 'undefined' && error) { %>
                 <div class="alert alert-error"><%= error %></div>
             <% } %>
+            <div id="passkey-error" class="alert alert-error" style="display:none;"></div>
+
+            <button type="button" class="btn btn-passkey btn-block" id="passkeyBtn" onclick="loginWithPasskey()">
+                🔑 Přihlásit pomocí Face ID / Touch ID
+            </button>
+
+            <div class="login-divider"><span>nebo heslem</span></div>
 
             <form method="POST" action="/login">
                 <div class="form-group">
@@ -31,5 +38,43 @@
             </form>
         </div>
     </div>
+
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+    <script>
+        async function loginWithPasskey() {
+            const btn = document.getElementById('passkeyBtn');
+            const errDiv = document.getElementById('passkey-error');
+            errDiv.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Čekám na ověření…';
+
+            try {
+                const optRes = await fetch('/auth/passkey/login-options');
+                const options = await optRes.json();
+
+                const assertion = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: options });
+
+                const verRes = await fetch('/auth/passkey/login-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(assertion),
+                });
+                const result = await verRes.json();
+
+                if (result.verified) {
+                    window.location.href = '/';
+                } else {
+                    throw new Error('Ověření selhalo');
+                }
+            } catch (err) {
+                errDiv.textContent = err.name === 'NotAllowedError'
+                    ? 'Ověření bylo zrušeno.'
+                    : 'Přihlášení pomocí Face ID selhalo. Zkuste to znovu nebo použijte heslo.';
+                errDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🔑 Přihlásit pomocí Face ID / Touch ID';
+            }
+        }
+    </script>
 </body>
 </html>
