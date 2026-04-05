@@ -1,0 +1,54 @@
+<div class="ct-header">
+  <div class="ct-avatar"><%= (locals.username || '?').substring(0, 2).toUpperCase() %></div>
+  <div class="ct-header-title"><%= pageTitle %></div>
+  <button class="ct-hamburger" id="hamburger" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<div class="ct-drawer" id="drawer">
+  <div class="ct-drawer-backdrop" onclick="closeDrawer()"></div>
+  <div class="ct-drawer-panel">
+    <div class="ct-drawer-head">
+      <div class="ct-drawer-logo">Stavební deník</div>
+      <div class="ct-drawer-sub">Správa zakázek</div>
+    </div>
+    <div class="ct-drawer-nav">
+      <a href="/" class="ct-nav-item <%= activePage === 'dashboard' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
+        Přehled
+      </a>
+      <a href="/constructions" class="ct-nav-item <%= activePage === 'constructions' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14V8l7-6 7 6v6"/><rect x="6" y="10" width="6" height="4"/></svg>
+        Stavby
+      </a>
+      <a href="/materials" class="ct-nav-item <%= activePage === 'materials' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2"/><path d="M9 5v8M5 9h8"/></svg>
+        Materiály
+      </a>
+      <a href="/works" class="ct-nav-item <%= activePage === 'works' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h12v12H3zM3 7h12M7 7v8"/></svg>
+        Práce
+      </a>
+      <a href="/reports" class="ct-nav-item <%= activePage === 'reports' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 14V6l3-3h9v11H3z"/><path d="M6 3v3H3"/><path d="M6 8h6M6 11h4"/></svg>
+        Reporty
+      </a>
+      <div class="ct-nav-divider"></div>
+      <a href="/workers" class="ct-nav-item <%= activePage === 'workers' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="3"/><path d="M3 15c0-3.314 2.686-6 6-6s6 2.686 6 6"/></svg>
+        Zaměstnanci
+      </a>
+      <div class="ct-nav-divider"></div>
+      <a href="/settings" class="ct-nav-item <%= activePage === 'settings' ? 'active' : '' %>">
+        <svg class="ct-nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M4.22 4.22l1.42 1.42M12.36 12.36l1.42 1.42M4.22 13.78l1.42-1.42M12.36 5.64l1.42-1.42"/></svg>
+        Nastavení
+      </a>
+    </div>
+    <div class="ct-drawer-footer">
+      <div class="ct-drawer-footer-label">Přihlášen jako</div>
+      <div class="ct-drawer-footer-val"><%= locals.username || '' %></div>
+      <a href="/logout" class="ct-drawer-logout">Odhlásit se</a>
+    </div>
+  </div>
+</div>

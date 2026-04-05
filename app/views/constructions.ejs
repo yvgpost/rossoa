@@ -1,162 +1,164 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stavby - Rossoa Tracker</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stavby - Rossoa Tracker</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-brand">Rossoa Tracker</a>
-            <ul class="nav-menu">
-                <li><a href="/">Přehled</a></li>
-                <li><a href="/constructions" class="active">Stavby</a></li>
-                <li><a href="/materials">Materiály</a></li>
-                <li><a href="/works">Práce</a></li>
-                <li><a href="/workers">Zaměstnanci</a></li>
-                <li><a href="/settings">Nastavení</a></li>
-                <li class="nav-user">
-                    <span><%= username %></span>
-                    <a href="/logout" class="btn-logout">Odhlásit</a>
-                </li>
-            </ul>
+<div class="ct-root">
+
+  <%- include('_header', { pageTitle: 'Stavby', activePage: 'constructions' }) %>
+
+  <div class="ct-section" style="margin-top:16px;">
+    <button class="ct-section-add" onclick="openAddModal()">
+      <span class="ct-add-icon">+</span> Přidat stavbu
+    </button>
+
+    <% if (constructions.length === 0) { %>
+      <div class="ct-empty">Žádné stavby nejsou vytvořeny</div>
+    <% } else { %>
+      <div class="ct-project-list">
+        <% constructions.forEach(function(c) {
+          const stateClass = c.state === 'In progress' ? 'active' : c.state === 'Planned' ? 'planned' : 'finished';
+          const stateLabel = c.state === 'In progress' ? 'Aktivní' : c.state === 'Planned' ? 'Plánovaná' : 'Dokončená';
+          const price = parseFloat(c.price || 0);
+          const exp = parseFloat(c.total_expenses || 0);
+          const profit = price - exp;
+        %>
+        <div class="ct-project" id="proj-<%= c.id %>">
+          <div class="ct-project-header" onclick="toggleProject(<%= c.id %>)">
+            <span class="ct-status-dot <%= stateClass %>"></span>
+            <span class="ct-project-name"><%= c.name %></span>
+            <span class="ct-project-price"><%= price.toLocaleString('cs-CZ') %> Kč</span>
+            <svg class="ct-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+          <div class="ct-project-body">
+            <div class="ct-divider"></div>
+            <span class="ct-tag <%= stateClass %>"><%= stateLabel %></span>
+            <div class="ct-detail-grid">
+              <div><div class="ct-detail-lbl">Zákazník</div><div class="ct-detail-val"><%= c.customer || '—' %></div></div>
+              <div><div class="ct-detail-lbl">Zahájení</div><div class="ct-detail-val"><%= c.beginning_date ? new Date(c.beginning_date).toLocaleDateString('cs-CZ') : '—' %></div></div>
+              <div><div class="ct-detail-lbl">Ukončení</div><div class="ct-detail-val"><%= c.end_date ? new Date(c.end_date).toLocaleDateString('cs-CZ') : '—' %></div></div>
+              <div><div class="ct-detail-lbl">Cena zakázky</div><div class="ct-detail-val amber"><%= price.toLocaleString('cs-CZ') %> Kč</div></div>
+              <div><div class="ct-detail-lbl">Náklady</div><div class="ct-detail-val red"><%= exp.toLocaleString('cs-CZ') %> Kč</div></div>
+              <div><div class="ct-detail-lbl">Zisk / ztráta</div><div class="ct-detail-val <%= profit >= 0 ? 'green' : 'red' %>"><%= profit.toLocaleString('cs-CZ') %> Kč</div></div>
+            </div>
+            <div class="ct-btn-row">
+              <a href="/materials?construction_id=<%= c.id %>" class="ct-link-btn">Materiály</a>
+              <a href="/works?construction_id=<%= c.id %>" class="ct-link-btn">Práce</a>
+            </div>
+            <div class="ct-btn-row" style="margin-top:8px;">
+              <button class="ct-edit-btn" onclick="openEditModal(<%= c.id %>, '<%= c.name.replace(/'/g, "\\'") %>', '<%= (c.customer||'').replace(/'/g, "\\'") %>', '<%= c.beginning_date ? new Date(c.beginning_date).toISOString().split('T')[0] : '' %>', '<%= c.end_date ? new Date(c.end_date).toISOString().split('T')[0] : '' %>', <%= price %>)">
+                <svg class="ct-edit-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+                Upravit
+              </button>
+              <form method="POST" action="/constructions/delete/<%= c.id %>" onsubmit="return confirm('Smazat stavbu <%= c.name %>?');" style="flex:1;">
+                <button type="submit" class="ct-del-btn" style="width:100%;">Smazat</button>
+              </form>
+            </div>
+          </div>
         </div>
-    </nav>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
 
-    <main class="container">
-        <div class="page-header">
-            <h1>Stavby</h1>
-            <button class="btn btn-primary" onclick="document.getElementById('constructionForm').style.display = 'block'">Přidat stavbu</button>
-        </div>
+</div>
 
-        <div id="constructionForm" class="form-panel" style="display: none;">
-            <h3>Nová stavba</h3>
-            <form method="POST" action="/constructions">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="name">Název stavby</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="customer">Zákazník</label>
-                        <input type="text" id="customer" name="customer">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="beginning_date">Datum zahájení</label>
-                        <input type="date" id="beginning_date" name="beginning_date">
-                    </div>
-                    <div class="form-group">
-                        <label for="end_date">Datum ukončení</label>
-                        <input type="date" id="end_date" name="end_date">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="price">Cena projektu (Kč)</label>
-                        <input type="number" id="price" name="price" step="0.01" value="0">
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Uložit</button>
-                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('constructionForm').style.display = 'none'">Zrušit</button>
-                </div>
-            </form>
-        </div>
+<!-- Add Modal -->
+<div class="ct-modal-backdrop" id="add-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Nová stavba</div>
+    <form method="POST" action="/constructions">
+      <div class="ct-field">
+        <label>Název stavby</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="ct-field">
+        <label>Zákazník</label>
+        <input type="text" name="customer">
+      </div>
+      <div class="ct-field">
+        <label>Datum zahájení</label>
+        <input type="date" name="beginning_date">
+      </div>
+      <div class="ct-field">
+        <label>Datum ukončení</label>
+        <input type="date" name="end_date">
+      </div>
+      <div class="ct-field">
+        <label>Cena projektu (Kč)</label>
+        <input type="number" name="price" step="0.01" value="0">
+      </div>
+      <div class="ct-modal-actions">
+        <button type="button" class="ct-btn" onclick="closeAddModal()">Zrušit</button>
+        <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        <% if (constructions.length > 0) { %>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Název</th>
-                        <th>Zákazník</th>
-                        <th>Stav</th>
-                        <th>Datum zahájení</th>
-                        <th>Datum ukončení</th>
-                        <th>Cena</th>
-                        <th>Náklady</th>
-                        <th>Zisk</th>
-                        <th>Akce</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% constructions.forEach(function(c) { %>
-                        <tr>
-                            <td><%= c.name %></td>
-                            <td><%= c.customer || '-' %></td>
-                            <td>
-                                <span class="badge badge-<%= c.state === 'Finished' ? 'success' : c.state === 'In progress' ? 'primary' : 'secondary' %>">
-                                    <%= c.state %>
-                                </span>
-                            </td>
-                            <td><%= c.beginning_date ? new Date(c.beginning_date).toLocaleDateString('cs-CZ') : '-' %></td>
-                            <td><%= c.end_date ? new Date(c.end_date).toLocaleDateString('cs-CZ') : '-' %></td>
-                            <td><%= parseFloat(c.price).toLocaleString('cs-CZ') %> Kč</td>
-                            <td><%= parseFloat(c.total_expenses || 0).toLocaleString('cs-CZ') %> Kč</td>
-                            <td class="<%= c.revenue >= 0 ? 'text-success' : 'text-danger' %>">
-                                <%= c.revenue.toLocaleString('cs-CZ') %> Kč
-                            </td>
-                            <td class="actions">
-                                <a href="/materials?construction_id=<%= c.id %>" class="btn btn-small">Materiály</a>
-                                <a href="/works?construction_id=<%= c.id %>" class="btn btn-small">Práce</a>
-                                <button class="btn btn-small btn-edit" onclick="editConstruction(<%= c.id %>, '<%= c.name %>', '<%= c.customer || '' %>', '<%= c.beginning_date ? c.beginning_date.toISOString().split('T')[0] : '' %>', '<%= c.end_date ? c.end_date.toISOString().split('T')[0] : '' %>', <%= c.price %>)">Upravit</button>
-                                <form method="POST" action="/constructions/delete/<%= c.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat tuto stavbu?');">
-                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        <% } else { %>
-            <p class="empty-state">Žádné stavby nejsou vytvořeny.</p>
-        <% } %>
-    </main>
+<!-- Edit Modal -->
+<div class="ct-modal-backdrop" id="edit-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Upravit stavbu</div>
+    <form method="POST" action="/constructions">
+      <input type="hidden" name="id" id="edit-id">
+      <div class="ct-field">
+        <label>Název stavby</label>
+        <input type="text" name="name" id="edit-name" required>
+      </div>
+      <div class="ct-field">
+        <label>Zákazník</label>
+        <input type="text" name="customer" id="edit-customer">
+      </div>
+      <div class="ct-field">
+        <label>Datum zahájení</label>
+        <input type="date" name="beginning_date" id="edit-start">
+      </div>
+      <div class="ct-field">
+        <label>Datum ukončení</label>
+        <input type="date" name="end_date" id="edit-end">
+      </div>
+      <div class="ct-field">
+        <label>Cena projektu (Kč)</label>
+        <input type="number" name="price" id="edit-price" step="0.01">
+      </div>
+      <div class="ct-modal-actions">
+        <button type="button" class="ct-btn" onclick="closeEditModal()">Zrušit</button>
+        <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-    <script>
-        function editConstruction(id, name, customer, beginning_date, end_date, price) {
-            const form = document.getElementById('constructionForm');
-            form.style.display = 'block';
-            form.innerHTML = `
-                <h3>Upravit stavbu</h3>
-                <form method="POST" action="/constructions">
-                    <input type="hidden" name="id" value="${id}">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name">Název stavby</label>
-                            <input type="text" id="name" name="name" value="${name}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="customer">Zákazník</label>
-                            <input type="text" id="customer" name="customer" value="${customer}">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="beginning_date">Datum zahájení</label>
-                            <input type="date" id="beginning_date" name="beginning_date" value="${beginning_date}">
-                        </div>
-                        <div class="form-group">
-                            <label for="end_date">Datum ukončení</label>
-                            <input type="date" id="end_date" name="end_date" value="${end_date}">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="price">Cena projektu (Kč)</label>
-                            <input type="number" id="price" name="price" step="0.01" value="${price}">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Uložit</button>
-                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('constructionForm').style.display = 'none'; location.reload();">Zrušit</button>
-                    </div>
-                </form>
-            `;
-        }
-    </script>
+<script src="/app.js"></script>
+<script>
+function toggleProject(id) {
+  document.getElementById('proj-' + id).classList.toggle('open');
+}
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('show');
+}
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('show');
+}
+function openEditModal(id, name, customer, start, end, price) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-name').value = name;
+  document.getElementById('edit-customer').value = customer;
+  document.getElementById('edit-start').value = start;
+  document.getElementById('edit-end').value = end;
+  document.getElementById('edit-price').value = price;
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+document.getElementById('add-modal').addEventListener('click', function(e) { if (e.target === this) closeAddModal(); });
+document.getElementById('edit-modal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
+</script>
 </body>
 </html>

@@ -1,82 +1,742 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Přehled - Rossoa Tracker</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Přehled - Rossoa Tracker</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-brand">Rossoa Tracker</a>
-            <ul class="nav-menu">
-                <li><a href="/" class="active">Přehled</a></li>
-                <li><a href="/constructions">Stavby</a></li>
-                <li><a href="/materials">Materiály</a></li>
-                <li><a href="/works">Práce</a></li>
-                <li><a href="/workers">Zaměstnanci</a></li>
-                <li><a href="/settings">Nastavení</a></li>
-                <li class="nav-user">
-                    <span><%= username %></span>
-                    <a href="/logout" class="btn-logout">Odhlásit</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+<div class="ct-root">
 
-    <main class="container">
-        <h1>Přehled</h1>
+  <%- include('_header', { pageTitle: 'Přehled', activePage: 'dashboard' }) %>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value"><%= constructionsCount %></div>
-                <div class="stat-label">Stavby celkem</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value"><%= activeWorkers %></div>
-                <div class="stat-label">Aktivní zaměstnanci</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value"><%= workersCount %></div>
-                <div class="stat-label">Zaměstnanci celkem</div>
-            </div>
-        </div>
+  <div class="ct-section" style="margin-top:16px;">
+    <div class="ct-section-label">Stavby</div>
+    <div class="ct-stat-grid">
+      <div class="ct-stat green"><div class="ct-stat-val"><%= inProgress %></div><div class="ct-stat-lbl">Probíhající</div></div>
+      <div class="ct-stat blue"><div class="ct-stat-val"><%= planned %></div><div class="ct-stat-lbl">Plánované</div></div>
+      <div class="ct-stat grey"><div class="ct-stat-val"><%= finished %></div><div class="ct-stat-lbl">Dokončené</div></div>
+    </div>
+    <div class="ct-stat-grid-2">
+      <div class="ct-stat normal"><div class="ct-stat-val"><%= activeWorkers %></div><div class="ct-stat-lbl">Zaměstnanci</div></div>
+      <div class="ct-stat accent money"><div class="ct-stat-val"><%= totalPrice.toLocaleString('cs-CZ') %> Kč</div><div class="ct-stat-lbl">Celková cena</div></div>
+    </div>
+    <div class="ct-stat-grid-2">
+      <div class="ct-stat red money"><div class="ct-stat-val"><%= totalExpenses.toLocaleString('cs-CZ') %> Kč</div><div class="ct-stat-lbl">Celkové náklady</div></div>
+      <div class="ct-stat money <%= totalProfit >= 0 ? 'green' : 'red' %>"><div class="ct-stat-val"><%= totalProfit.toLocaleString('cs-CZ') %> Kč</div><div class="ct-stat-lbl">Celkový zisk</div></div>
+    </div>
+  </div>
 
-        <div class="section">
-            <h2>Nejnovější stavby</h2>
-            <% if (recentConstructions.length > 0) { %>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Název</th>
-                            <th>Zákazník</th>
-                            <th>Stav</th>
-                            <th>Cena</th>
-                            <th>Náklady</th>
-                            <th>Zisk</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% recentConstructions.forEach(function(c) { %>
-                            <tr>
-                                <td><%= c.name %></td>
-                                <td><%= c.customer || '-' %></td>
-                                <td><span class="badge badge-<%= c.state === 'Finished' ? 'success' : c.state === 'In progress' ? 'primary' : 'secondary' %>"><%= c.state %></span></td>
-                                <td><%= parseFloat(c.price).toLocaleString('cs-CZ') %> Kč</td>
-                                <td><%= parseFloat(c.total_expenses || 0).toLocaleString('cs-CZ') %> Kč</td>
-                                <td class="<%= (parseFloat(c.price) - parseFloat(c.total_expenses || 0)) >= 0 ? 'text-success' : 'text-danger' %>">
-                                    <%= (parseFloat(c.price) - parseFloat(c.total_expenses || 0)).toLocaleString('cs-CZ') %> Kč
-                                </td>
-                            </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-            <% } else { %>
-                <p class="empty-state">Žádné stavby nejsou vytvořeny.</p>
-            <% } %>
-            <a href="/constructions" class="btn btn-primary">Všechny stavby</a>
+  <div class="ct-section" style="margin-top:20px;">
+    <div class="ct-section-label">Aktivní a plánované stavby</div>
+    <% if (constructions.length === 0) { %>
+      <div class="ct-empty">Žádné aktivní nebo plánované stavby</div>
+    <% } else { %>
+      <div class="ct-project-list">
+        <% constructions.forEach(function(c) {
+          const stateClass = c.state === 'In progress' ? 'active' : c.state === 'Planned' ? 'planned' : 'finished';
+          const stateLabel = c.state === 'In progress' ? 'Aktivní' : c.state === 'Planned' ? 'Plánovaná' : 'Dokončená';
+          const totalExp = parseFloat(c.total_expenses || 0);
+          const price = parseFloat(c.price || 0);
+          const profit = price - totalExp;
+        %>
+        <div class="ct-project" id="proj-<%= c.id %>">
+          <div class="ct-project-header" onclick="toggleProject(<%= c.id %>)">
+            <span class="ct-status-dot <%= stateClass %>"></span>
+            <span class="ct-project-name"><%= c.name %></span>
+            <span class="ct-project-price"><%= price.toLocaleString('cs-CZ') %> Kč</span>
+            <svg class="ct-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+          </div>
+          <div class="ct-project-body">
+            <div class="ct-divider"></div>
+            <span class="ct-tag <%= stateClass %>"><%= stateLabel %></span>
+            <div class="ct-detail-grid">
+              <div><div class="ct-detail-lbl">Datum zahájení</div><div class="ct-detail-val"><%= c.beginning_date ? new Date(c.beginning_date).toLocaleDateString('cs-CZ') : '—' %></div></div>
+              <div><div class="ct-detail-lbl">Zákazník</div><div class="ct-detail-val"><%= c.customer || '—' %></div></div>
+              <div><div class="ct-detail-lbl">Cena stavby</div><div class="ct-detail-val amber"><%= price.toLocaleString('cs-CZ') %> Kč</div></div>
+              <div><div class="ct-detail-lbl">Celkové náklady</div><div class="ct-detail-val red"><%= totalExp.toLocaleString('cs-CZ') %> Kč</div></div>
+              <div><div class="ct-detail-lbl">Celkový zisk</div><div class="ct-detail-val <%= profit >= 0 ? 'green' : 'red' %>"><%= profit.toLocaleString('cs-CZ') %> Kč</div></div>
+              <div><div class="ct-detail-lbl">Náklady materiály/služby</div><div class="ct-detail-val red"><%= parseFloat(c.materials_total).toLocaleString('cs-CZ') %> Kč</div></div>
+              <div></div>
+              <div><div class="ct-detail-lbl">Náklady práce</div><div class="ct-detail-val red"><%= parseFloat(c.works_total).toLocaleString('cs-CZ') %> Kč</div></div>
+            </div>
+            <div class="ct-btn-row">
+              <button class="ct-edit-btn" onclick="openEditModal(<%= c.id %>, '<%= c.name.replace(/'/g, "\\'") %>', '<%= (c.customer||'').replace(/'/g, "\\'") %>', '<%= c.beginning_date ? new Date(c.beginning_date).toISOString().split('T')[0] : '' %>', '<%= c.end_date ? new Date(c.end_date).toISOString().split('T')[0] : '' %>', <%= price %>)">
+                <svg class="ct-edit-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+                Upravit
+              </button>
+              <button class="ct-add-btn" onclick="openRecordModal(<%= c.id %>)">
+                <span class="ct-add-icon">+</span> Přidat záznam
+              </button>
+            </div>
+            <div class="ct-records">
+              <div class="ct-records-label">Poslední 10 záznamů</div>
+              <% if (c.records && c.records.length > 0) { %>
+                <% c.records.forEach(function(r) { %>
+                  <div class="ct-record-item">
+                    <div style="flex:1;min-width:0;">
+                      <div class="ct-record-desc"><%= r.description %></div>
+                      <div class="ct-record-date"><%= r.date ? new Date(r.date).toLocaleDateString('cs-CZ') : '' %></div>
+                    </div>
+                    <div class="ct-record-amt out" style="margin-right:10px;">−<%= parseFloat(r.price).toLocaleString('cs-CZ') %> Kč</div>
+                    <button class="ct-record-edit-btn" onclick="openRecordEditModal(<%= r.id %>, '<%= r.kind %>', '<%= r.construction_id %>', '<%= r.raw_category %>', '<%= r.raw_type.replace(/'/g, "\\'") %>', '<%= r.date ? new Date(r.date).toISOString().split('T')[0] : '' %>', <%= r.price %>, <%= r.quantity != null ? r.quantity : 'null' %>, '<%= r.worker_id || '' %>')" title="Upravit">
+                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+                    </button>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <div style="font-size:15px;color:var(--color-text-secondary);padding:8px 0;">Žádné záznamy</div>
+              <% } %>
+            </div>
+          </div>
         </div>
-    </main>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- Record Modal -->
+<div class="ct-modal-backdrop" id="record-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Přidat záznam</div>
+
+    <div id="rec-step-type">
+      <div class="ct-type-selector">
+        <button class="ct-type-option" id="opt-material" onclick="selectRecordType('material')">
+          Materiál<br>/ Služba
+        </button>
+        <button class="ct-type-option" id="opt-work" onclick="selectRecordType('work')">
+          Práce
+        </button>
+      </div>
+      <div class="ct-modal-actions">
+        <button class="ct-btn" style="width:100%;" onclick="closeRecordModal()">Zrušit</button>
+      </div>
+    </div>
+
+    <div id="rec-fields-material" style="display:none;">
+      <form method="POST" action="/materials" onsubmit="return validateAddMatForm()" id="add-mat-form">
+        <input type="hidden" name="redirect_to" value="/">
+        <input type="hidden" name="construction_id" id="add-mat-construction">
+        <input type="hidden" name="is_custom_type" id="add-mat-is-custom" value="false">
+        <div class="ct-field">
+          <label>Datum</label>
+          <input type="date" name="date" id="add-mat-date" required>
+        </div>
+        <div class="ct-field">
+          <label>Kategorie</label>
+          <select name="category" id="add-mat-category" required onchange="addMatUpdateTypeOptions()">
+            <option value="">-- Vyberte kategorii --</option>
+            <option value="Material">Materiál</option>
+            <option value="Sluzba">Služba</option>
+          </select>
+        </div>
+        <div class="ct-field">
+          <label>Typ</label>
+          <select name="type" id="add-mat-type" required onchange="addMatHandleTypeChange(this)">
+            <option value="">-- Vyberte typ --</option>
+          </select>
+          <div id="add-mat-custom-wrapper" style="display:none;margin-top:8px;">
+            <input type="text" name="type_custom" id="add-mat-type-custom" placeholder="Začněte psát..." list="add-mat-archived-suggestions" autocomplete="off" oninput="addMatCheckArchivedSuggestions(this)">
+            <datalist id="add-mat-archived-suggestions"></datalist>
+            <small id="add-mat-type-help" style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;display:block;"></small>
+            <div id="add-mat-new-unit-wrapper" style="display:none;margin-top:8px;">
+              <label style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;display:block;">Jednotka nového materiálu</label>
+              <select name="new_type_unit" id="add-mat-new-type-unit" onchange="addMatSyncUnitDisplay()">
+                <option value="">-- Vyberte jednotku --</option>
+                <option value="ks">ks (kusy)</option>
+                <option value="m">m (metr)</option>
+                <option value="m²">m²</option>
+                <option value="m³">m³</option>
+                <option value="kg">kg (kilogram)</option>
+                <option value="t">t (tuna)</option>
+                <option value="l">l (litr)</option>
+                <option value="bm">bm (běžný metr)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="add-mat-qty-row" style="display:none;">
+          <div class="ct-field">
+            <label>Množství</label>
+            <input type="number" name="quantity" id="add-mat-quantity" step="0.001">
+          </div>
+          <div class="ct-field">
+            <label>Jednotka</label>
+            <input type="text" id="add-mat-unit-display" readonly>
+          </div>
+        </div>
+        <div class="ct-field">
+          <label>Cena (Kč)</label>
+          <input type="number" name="price" id="add-mat-price" step="0.01" min="0.01" required>
+        </div>
+        <div class="ct-modal-actions">
+          <button type="button" class="ct-btn" onclick="closeRecordModal()">Zrušit</button>
+          <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="rec-fields-work" style="display:none;">
+      <form method="POST" action="/works">
+        <input type="hidden" name="redirect_to" value="/">
+        <input type="hidden" name="construction_id" id="add-w-construction">
+        <div class="ct-field">
+          <label>Typ práce</label>
+          <input type="text" name="type" id="rec-work-type" placeholder="např. Zednické práce" required>
+        </div>
+        <div class="ct-field">
+          <label>Zaměstnanec</label>
+          <select name="worker_id" id="rec-worker" required>
+            <option value="">-- Vyberte zaměstnance --</option>
+            <% workers.forEach(function(w) { %>
+              <option value="<%= w.id %>"><%= w.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="ct-field">
+          <label>Datum</label>
+          <input type="date" name="date" id="rec-date-work" required>
+        </div>
+        <div class="ct-field">
+          <label>Cena (Kč)</label>
+          <input type="number" name="price" id="rec-price-work" step="0.01" min="0" required>
+        </div>
+        <div class="ct-modal-actions">
+          <button type="button" class="ct-btn" onclick="closeRecordModal()">Zrušit</button>
+          <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Record Edit Modal – Material/Service -->
+<div class="ct-modal-backdrop" id="dm-mat-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Upravit materiál / službu</div>
+    <form method="POST" action="/materials" onsubmit="return validateDmMatForm()" id="dm-mat-form">
+      <input type="hidden" name="id" id="dm-mat-id">
+      <input type="hidden" name="redirect_to" value="/">
+      <input type="hidden" name="is_custom_type" id="dm-mat-is-custom" value="false">
+      <div class="ct-field">
+        <label>Stavba</label>
+        <select name="construction_id" id="dm-mat-construction" required>
+          <option value="">-- Vyberte stavbu --</option>
+          <% constructions.forEach(function(c) { %>
+            <option value="<%= c.id %>"><%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="ct-field">
+        <label>Datum</label>
+        <input type="date" name="date" id="dm-mat-date" required>
+      </div>
+      <div class="ct-field">
+        <label>Kategorie</label>
+        <select name="category" id="dm-mat-category" required onchange="dmUpdateTypeOptions()">
+          <option value="">-- Vyberte kategorii --</option>
+          <option value="Material">Materiál</option>
+          <option value="Sluzba">Služba</option>
+        </select>
+      </div>
+      <div class="ct-field">
+        <label>Typ</label>
+        <select name="type" id="dm-mat-type" required onchange="dmHandleTypeChange(this)">
+          <option value="">-- Vyberte typ --</option>
+        </select>
+        <div id="dm-mat-custom-wrapper" style="display:none;margin-top:8px;">
+          <input type="text" name="type_custom" id="dm-mat-type-custom" placeholder="Začněte psát..." list="dm-mat-archived-suggestions" autocomplete="off" oninput="dmCheckArchivedSuggestions(this)">
+          <datalist id="dm-mat-archived-suggestions"></datalist>
+          <small id="dm-mat-type-help" style="font-size:11px;color:var(--color-text-secondary);margin-top:4px;display:block;"></small>
+          <div id="dm-mat-new-unit-wrapper" style="display:none;margin-top:8px;">
+            <label style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;display:block;">Jednotka nového materiálu</label>
+            <select name="new_type_unit" id="dm-mat-new-type-unit" onchange="dmSyncUnitDisplay()">
+              <option value="">-- Vyberte jednotku --</option>
+              <option value="ks">ks (kusy)</option>
+              <option value="m">m (metr)</option>
+              <option value="m²">m²</option>
+              <option value="m³">m³</option>
+              <option value="kg">kg (kilogram)</option>
+              <option value="t">t (tuna)</option>
+              <option value="l">l (litr)</option>
+              <option value="bm">bm (běžný metr)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="dm-mat-qty-row" style="display:none;">
+        <div class="ct-field">
+          <label>Množství</label>
+          <input type="number" name="quantity" id="dm-mat-quantity" step="0.001">
+        </div>
+        <div class="ct-field">
+          <label>Jednotka</label>
+          <input type="text" id="dm-mat-unit-display" readonly>
+        </div>
+      </div>
+      <div class="ct-field">
+        <label>Cena (Kč)</label>
+        <input type="number" name="price" id="dm-mat-price" step="0.01" min="0.01" required>
+      </div>
+      <div class="ct-modal-actions">
+        <button type="button" class="ct-btn" onclick="closeDmMatModal()">Zrušit</button>
+        <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Record Edit Modal – Work -->
+<div class="ct-modal-backdrop" id="dm-work-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Upravit práci</div>
+    <form method="POST" action="/works">
+      <input type="hidden" name="id" id="dm-w-id">
+      <input type="hidden" name="redirect_to" value="/">
+      <div class="ct-field">
+        <label>Stavba</label>
+        <select name="construction_id" id="dm-w-construction" required>
+          <option value="">-- Vyberte stavbu --</option>
+          <% constructions.forEach(function(c) { %>
+            <option value="<%= c.id %>"><%= c.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="ct-field">
+        <label>Typ práce</label>
+        <input type="text" name="type" id="dm-w-type" required>
+      </div>
+      <div class="ct-field">
+        <label>Zaměstnanec</label>
+        <select name="worker_id" id="dm-w-worker" required>
+          <option value="">-- Vyberte zaměstnance --</option>
+          <% workers.forEach(function(w) { %>
+            <option value="<%= w.id %>"><%= w.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="ct-field">
+        <label>Datum</label>
+        <input type="date" name="date" id="dm-w-date" required>
+      </div>
+      <div class="ct-field">
+        <label>Cena (Kč)</label>
+        <input type="number" name="price" id="dm-w-price" step="0.01" min="0" required>
+      </div>
+      <div class="ct-modal-actions">
+        <button type="button" class="ct-btn" onclick="closeDmWorkModal()">Zrušit</button>
+        <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Construction Modal -->
+<div class="ct-modal-backdrop" id="edit-modal">
+  <div class="ct-modal">
+    <div class="ct-modal-title">Upravit stavbu</div>
+    <form method="POST" action="/constructions">
+      <input type="hidden" name="id" id="edit-id">
+      <input type="hidden" name="redirect_to" value="/">
+      <div class="ct-field">
+        <label>Název zakázky</label>
+        <input type="text" name="name" id="edit-name" required>
+      </div>
+      <div class="ct-field">
+        <label>Zákazník</label>
+        <input type="text" name="customer" id="edit-customer">
+      </div>
+      <div class="ct-field">
+        <label>Datum zahájení</label>
+        <input type="date" name="beginning_date" id="edit-start">
+      </div>
+      <div class="ct-field">
+        <label>Datum ukončení</label>
+        <input type="date" name="end_date" id="edit-end">
+      </div>
+      <div class="ct-field">
+        <label>Cena zakázky (Kč)</label>
+        <input type="number" name="price" id="edit-price" step="0.01">
+      </div>
+      <div class="ct-modal-actions">
+        <button type="button" class="ct-btn" onclick="closeEditModal()">Zrušit</button>
+        <button type="submit" class="ct-btn ct-btn-primary">Uložit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+let activeConstructionId = null;
+let currentRecordType = null;
+
+function toggleProject(id) {
+  const el = document.getElementById('proj-' + id);
+  el.classList.toggle('open');
+}
+
+function openRecordModal(id) {
+  activeConstructionId = id;
+  currentRecordType = null;
+  document.getElementById('rec-step-type').style.display = 'block';
+  document.getElementById('rec-fields-material').style.display = 'none';
+  document.getElementById('rec-fields-work').style.display = 'none';
+  document.getElementById('opt-material').classList.remove('selected');
+  document.getElementById('opt-work').classList.remove('selected');
+  const today = new Date().toLocaleDateString('en-CA');
+  document.getElementById('add-mat-construction').value = id;
+  document.getElementById('add-w-construction').value = id;
+  document.getElementById('add-mat-date').value = today;
+  document.getElementById('rec-date-work').value = today;
+  document.getElementById('add-mat-price').value = '';
+  document.getElementById('rec-price-work').value = '';
+  document.getElementById('rec-work-type').value = '';
+  document.getElementById('add-mat-category').value = '';
+  addMatResetTypeSelect();
+  document.getElementById('record-modal').classList.add('show');
+}
+
+function selectRecordType(type) {
+  currentRecordType = type;
+  document.getElementById('opt-material').classList.toggle('selected', type === 'material');
+  document.getElementById('opt-work').classList.toggle('selected', type === 'work');
+  document.getElementById('rec-step-type').style.display = 'none';
+  if (type === 'material') {
+    document.getElementById('rec-fields-material').style.display = 'block';
+    document.getElementById('rec-fields-work').style.display = 'none';
+  } else {
+    document.getElementById('rec-fields-work').style.display = 'block';
+    document.getElementById('rec-fields-material').style.display = 'none';
+  }
+}
+
+function closeRecordModal() {
+  document.getElementById('record-modal').classList.remove('show');
+}
+
+document.getElementById('record-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeRecordModal();
+});
+
+// ---- Add record: material form full logic ----
+let addMatCurrentCategory = '';
+let addMatArchivedSuggestions = [];
+let addMatArchivedSearchTimeout;
+
+function addMatResetTypeSelect() {
+  const sel = document.getElementById('add-mat-type');
+  sel.innerHTML = '<option value="">-- Vyberte typ --</option>';
+  document.getElementById('add-mat-custom-wrapper').style.display = 'none';
+  document.getElementById('add-mat-type-custom').value = '';
+  document.getElementById('add-mat-type-help').textContent = '';
+  document.getElementById('add-mat-archived-suggestions').innerHTML = '';
+  addMatArchivedSuggestions = [];
+  document.getElementById('add-mat-is-custom').value = 'false';
+  document.getElementById('add-mat-new-unit-wrapper').style.display = 'none';
+  document.getElementById('add-mat-new-type-unit').value = '';
+  document.getElementById('add-mat-qty-row').style.display = 'none';
+  document.getElementById('add-mat-quantity').value = '';
+  document.getElementById('add-mat-unit-display').value = '';
+}
+
+function addMatUpdateTypeOptions() {
+  const category = document.getElementById('add-mat-category').value;
+  addMatCurrentCategory = category;
+  addMatResetTypeSelect();
+  const sel = document.getElementById('add-mat-type');
+  sel.innerHTML = '<option value="">-- Vyberte typ --</option>';
+  if (category === 'Material') {
+    dmMaterialTypes.forEach(t => { sel.innerHTML += `<option value="${t.name}">${t.name}</option>`; });
+    sel.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+  } else if (category === 'Sluzba') {
+    dmServiceTypes.forEach(t => { sel.innerHTML += `<option value="${t}">${t}</option>`; });
+    sel.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+  }
+}
+
+function addMatHandleTypeChange(select) {
+  const customWrapper = document.getElementById('add-mat-custom-wrapper');
+  const isCustom = document.getElementById('add-mat-is-custom');
+  const qtyRow = document.getElementById('add-mat-qty-row');
+  const unitDisplay = document.getElementById('add-mat-unit-display');
+  const newUnitWrapper = document.getElementById('add-mat-new-unit-wrapper');
+  if (select.value === '__new__') {
+    customWrapper.style.display = 'block';
+    document.getElementById('add-mat-type-custom').value = '';
+    document.getElementById('add-mat-type-help').textContent = '';
+    addMatArchivedSuggestions = [];
+    isCustom.value = 'true';
+    document.getElementById('add-mat-type-custom').focus();
+    if (addMatCurrentCategory === 'Material') { newUnitWrapper.style.display = 'block'; qtyRow.style.display = 'block'; unitDisplay.value = ''; }
+    else { newUnitWrapper.style.display = 'none'; qtyRow.style.display = 'none'; }
+  } else if (select.value) {
+    customWrapper.style.display = 'none';
+    isCustom.value = 'false';
+    newUnitWrapper.style.display = 'none';
+    if (addMatCurrentCategory === 'Material') {
+      const typeData = dmMaterialTypes.find(t => t.name === select.value);
+      unitDisplay.value = typeData ? (typeData.unit || '') : '';
+      qtyRow.style.display = 'block';
+    }
+  } else {
+    customWrapper.style.display = 'none';
+    isCustom.value = 'false';
+    newUnitWrapper.style.display = 'none';
+    qtyRow.style.display = 'none';
+    unitDisplay.value = '';
+  }
+}
+
+function addMatSyncUnitDisplay() {
+  document.getElementById('add-mat-unit-display').value = document.getElementById('add-mat-new-type-unit').value;
+}
+
+function addMatCheckArchivedSuggestions(input) {
+  clearTimeout(addMatArchivedSearchTimeout);
+  const datalist = document.getElementById('add-mat-archived-suggestions');
+  const helpText = document.getElementById('add-mat-type-help');
+  if (input.value.length < 2) { datalist.innerHTML = ''; addMatArchivedSuggestions = []; helpText.textContent = ''; helpText.style.color = ''; return; }
+  const activeNames = addMatCurrentCategory === 'Material' ? dmMaterialTypeNames : dmServiceTypes;
+  const activeMatch = activeNames.find(t => t.toLowerCase() === input.value.trim().toLowerCase());
+  if (activeMatch) { datalist.innerHTML = ''; addMatArchivedSuggestions = []; helpText.textContent = `Typ "${activeMatch}" již existuje. Vyberte ho výše.`; helpText.style.color = 'var(--red)'; return; }
+  else { helpText.style.color = ''; }
+  addMatArchivedSearchTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/search-types?q=${encodeURIComponent(input.value)}&category=${addMatCurrentCategory}`);
+      const results = await res.json();
+      datalist.innerHTML = '';
+      addMatArchivedSuggestions = results.map(r => r.name);
+      if (results.length > 0) {
+        helpText.textContent = 'Vyberte archivovanou položku nebo zadejte nový typ.';
+        results.forEach(r => { const o = document.createElement('option'); o.value = r.name; datalist.appendChild(o); });
+      } else { helpText.textContent = ''; addMatArchivedSuggestions = []; }
+    } catch(e) {}
+  }, 300);
+}
+
+function validateAddMatForm() {
+  const customWrapper = document.getElementById('add-mat-custom-wrapper');
+  const typeCustom = document.getElementById('add-mat-type-custom');
+  if (customWrapper.style.display !== 'none') {
+    const val = typeCustom.value.trim();
+    if (!val) { typeCustom.focus(); return false; }
+    const activeNames = addMatCurrentCategory === 'Material' ? dmMaterialTypeNames : dmServiceTypes;
+    if (activeNames.find(t => t.toLowerCase() === val.toLowerCase())) { alert('Typ již existuje. Vyberte ho ze seznamu.'); typeCustom.focus(); return false; }
+    if (addMatArchivedSuggestions.find(a => a.toLowerCase() === val.toLowerCase())) { alert('Vyberte archivovaný typ z návrhů.'); return false; }
+    if (addMatCurrentCategory === 'Material' && !document.getElementById('add-mat-new-type-unit').value) { alert('Prosím vyberte jednotku.'); return false; }
+  }
+  if (addMatCurrentCategory === 'Material' && document.getElementById('add-mat-qty-row').style.display !== 'none') {
+    const qty = document.getElementById('add-mat-quantity').value;
+    if (!qty || parseFloat(qty) <= 0) { alert('Prosím zadejte množství.'); document.getElementById('add-mat-quantity').focus(); return false; }
+  }
+  return true;
+}
+
+// ---- Record Edit: dispatch by kind ----
+const dmMaterialTypes = <%- JSON.stringify(materialTypes.map(t => ({ name: t.name, unit: t.unit || '' }))) %>;
+const dmMaterialTypeNames = dmMaterialTypes.map(t => t.name);
+const dmServiceTypes = <%- JSON.stringify(serviceTypes.map(t => t.name)) %>;
+let dmCurrentCategory = '';
+let dmArchivedSuggestions = [];
+let dmArchivedSearchTimeout;
+
+function openRecordEditModal(id, kind, constructionId, rawCategory, rawType, date, price, quantity, workerId) {
+  if (kind === 'work') {
+    document.getElementById('dm-w-id').value = id;
+    document.getElementById('dm-w-construction').value = constructionId;
+    document.getElementById('dm-w-type').value = rawType;
+    document.getElementById('dm-w-worker').value = workerId || '';
+    document.getElementById('dm-w-date').value = date;
+    document.getElementById('dm-w-price').value = price;
+    document.getElementById('dm-work-modal').classList.add('show');
+  } else {
+    document.getElementById('dm-mat-id').value = id;
+    document.getElementById('dm-mat-construction').value = constructionId;
+    document.getElementById('dm-mat-date').value = date;
+    document.getElementById('dm-mat-price').value = price;
+    document.getElementById('dm-mat-category').value = rawCategory;
+    dmUpdateTypeOptionsForEdit(rawCategory, rawType, quantity);
+    document.getElementById('dm-mat-modal').classList.add('show');
+  }
+}
+
+function closeDmMatModal() { document.getElementById('dm-mat-modal').classList.remove('show'); }
+function closeDmWorkModal() { document.getElementById('dm-work-modal').classList.remove('show'); }
+
+document.getElementById('dm-mat-modal').addEventListener('click', function(e) { if (e.target === this) closeDmMatModal(); });
+document.getElementById('dm-work-modal').addEventListener('click', function(e) { if (e.target === this) closeDmWorkModal(); });
+
+function dmUpdateTypeOptions() {
+  const category = document.getElementById('dm-mat-category').value;
+  const sel = document.getElementById('dm-mat-type');
+  dmCurrentCategory = category;
+  dmResetCustomTypeInput();
+  dmResetQuantityUnit();
+  sel.innerHTML = '<option value="">-- Vyberte typ --</option>';
+  if (category === 'Material') {
+    dmMaterialTypes.forEach(t => { sel.innerHTML += `<option value="${t.name}">${t.name}</option>`; });
+    sel.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+  } else if (category === 'Sluzba') {
+    dmServiceTypes.forEach(t => { sel.innerHTML += `<option value="${t}">${t}</option>`; });
+    sel.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+  }
+  document.getElementById('dm-mat-qty-row').style.display = 'none';
+}
+
+function dmUpdateTypeOptionsForEdit(category, selectedType, quantity) {
+  const sel = document.getElementById('dm-mat-type');
+  const customWrapper = document.getElementById('dm-mat-custom-wrapper');
+  const typeCustom = document.getElementById('dm-mat-type-custom');
+  const qtyRow = document.getElementById('dm-mat-qty-row');
+  const unitDisplay = document.getElementById('dm-mat-unit-display');
+  dmCurrentCategory = category;
+  customWrapper.style.display = 'none';
+  document.getElementById('dm-mat-new-unit-wrapper').style.display = 'none';
+  sel.innerHTML = '<option value="">-- Vyberte typ --</option>';
+  if (category === 'Material') {
+    dmMaterialTypes.forEach(t => { sel.innerHTML += `<option value="${t.name}">${t.name}</option>`; });
+  } else {
+    dmServiceTypes.forEach(t => { sel.innerHTML += `<option value="${t}">${t}</option>`; });
+  }
+  sel.innerHTML += '<option value="__new__">+ Přidat nový</option>';
+  const allNames = category === 'Material' ? dmMaterialTypeNames : dmServiceTypes;
+  if (allNames.includes(selectedType)) {
+    sel.value = selectedType;
+    if (category === 'Material') {
+      const typeData = dmMaterialTypes.find(t => t.name === selectedType);
+      unitDisplay.value = typeData ? (typeData.unit || '') : '';
+      qtyRow.style.display = 'block';
+      document.getElementById('dm-mat-quantity').value = quantity != null ? quantity : '';
+    }
+  } else {
+    sel.value = '';
+    customWrapper.style.display = 'block';
+    typeCustom.value = selectedType;
+    document.getElementById('dm-mat-is-custom').value = 'true';
+    if (category === 'Material') {
+      qtyRow.style.display = 'block';
+      document.getElementById('dm-mat-quantity').value = quantity != null ? quantity : '';
+    }
+  }
+}
+
+function dmHandleTypeChange(select) {
+  const customWrapper = document.getElementById('dm-mat-custom-wrapper');
+  const isCustom = document.getElementById('dm-mat-is-custom');
+  const qtyRow = document.getElementById('dm-mat-qty-row');
+  const unitDisplay = document.getElementById('dm-mat-unit-display');
+  const newUnitWrapper = document.getElementById('dm-mat-new-unit-wrapper');
+  if (select.value === '__new__') {
+    customWrapper.style.display = 'block';
+    document.getElementById('dm-mat-type-custom').value = '';
+    document.getElementById('dm-mat-type-help').textContent = '';
+    dmArchivedSuggestions = [];
+    isCustom.value = 'true';
+    document.getElementById('dm-mat-type-custom').focus();
+    if (dmCurrentCategory === 'Material') { newUnitWrapper.style.display = 'block'; qtyRow.style.display = 'block'; unitDisplay.value = ''; }
+    else { newUnitWrapper.style.display = 'none'; qtyRow.style.display = 'none'; }
+  } else if (select.value) {
+    customWrapper.style.display = 'none';
+    isCustom.value = 'false';
+    newUnitWrapper.style.display = 'none';
+    if (dmCurrentCategory === 'Material') {
+      const typeData = dmMaterialTypes.find(t => t.name === select.value);
+      unitDisplay.value = typeData ? (typeData.unit || '') : '';
+      qtyRow.style.display = 'block';
+    }
+  } else {
+    customWrapper.style.display = 'none';
+    isCustom.value = 'false';
+    newUnitWrapper.style.display = 'none';
+    qtyRow.style.display = 'none';
+    unitDisplay.value = '';
+  }
+}
+
+function dmResetCustomTypeInput() {
+  document.getElementById('dm-mat-custom-wrapper').style.display = 'none';
+  document.getElementById('dm-mat-type-custom').value = '';
+  document.getElementById('dm-mat-type-help').textContent = '';
+  document.getElementById('dm-mat-type-help').style.color = '';
+  document.getElementById('dm-mat-archived-suggestions').innerHTML = '';
+  dmArchivedSuggestions = [];
+  document.getElementById('dm-mat-is-custom').value = 'false';
+  document.getElementById('dm-mat-new-unit-wrapper').style.display = 'none';
+  document.getElementById('dm-mat-new-type-unit').value = '';
+}
+
+function dmResetQuantityUnit() {
+  document.getElementById('dm-mat-quantity').value = '';
+  document.getElementById('dm-mat-unit-display').value = '';
+}
+
+function dmSyncUnitDisplay() {
+  document.getElementById('dm-mat-unit-display').value = document.getElementById('dm-mat-new-type-unit').value;
+}
+
+function dmCheckArchivedSuggestions(input) {
+  clearTimeout(dmArchivedSearchTimeout);
+  const datalist = document.getElementById('dm-mat-archived-suggestions');
+  const helpText = document.getElementById('dm-mat-type-help');
+  if (input.value.length < 2) { datalist.innerHTML = ''; dmArchivedSuggestions = []; helpText.textContent = ''; helpText.style.color = ''; return; }
+  const activeNames = dmCurrentCategory === 'Material' ? dmMaterialTypeNames : dmServiceTypes;
+  const activeMatch = activeNames.find(t => t.toLowerCase() === input.value.trim().toLowerCase());
+  if (activeMatch) { datalist.innerHTML = ''; dmArchivedSuggestions = []; helpText.textContent = `Typ "${activeMatch}" již existuje. Vyberte ho výše.`; helpText.style.color = 'var(--red)'; return; }
+  else { helpText.style.color = ''; }
+  dmArchivedSearchTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/search-types?q=${encodeURIComponent(input.value)}&category=${dmCurrentCategory}`);
+      const results = await res.json();
+      datalist.innerHTML = '';
+      dmArchivedSuggestions = results.map(r => r.name);
+      if (results.length > 0) {
+        helpText.textContent = 'Vyberte archivovanou položku nebo zadejte nový typ.';
+        results.forEach(r => { const o = document.createElement('option'); o.value = r.name; datalist.appendChild(o); });
+      } else { helpText.textContent = ''; dmArchivedSuggestions = []; }
+    } catch(e) {}
+  }, 300);
+}
+
+function validateDmMatForm() {
+  const customWrapper = document.getElementById('dm-mat-custom-wrapper');
+  const typeCustom = document.getElementById('dm-mat-type-custom');
+  if (customWrapper.style.display !== 'none') {
+    const val = typeCustom.value.trim();
+    if (!val) { typeCustom.focus(); return false; }
+    const activeNames = dmCurrentCategory === 'Material' ? dmMaterialTypeNames : dmServiceTypes;
+    if (activeNames.find(t => t.toLowerCase() === val.toLowerCase())) { alert('Typ již existuje. Vyberte ho ze seznamu.'); typeCustom.focus(); return false; }
+    if (dmArchivedSuggestions.find(a => a.toLowerCase() === val.toLowerCase())) { alert('Vyberte archivovaný typ z návrhů.'); return false; }
+    if (dmCurrentCategory === 'Material' && !document.getElementById('dm-mat-new-type-unit').value) { alert('Prosím vyberte jednotku.'); return false; }
+  }
+  if (dmCurrentCategory === 'Material' && document.getElementById('dm-mat-qty-row').style.display !== 'none') {
+    const qty = document.getElementById('dm-mat-quantity').value;
+    if (!qty || parseFloat(qty) <= 0) { alert('Prosím zadejte množství.'); document.getElementById('dm-mat-quantity').focus(); return false; }
+  }
+  return true;
+}
+
+function openEditModal(id, name, customer, start, end, price) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-name').value = name;
+  document.getElementById('edit-customer').value = customer;
+  document.getElementById('edit-start').value = start;
+  document.getElementById('edit-end').value = end;
+  document.getElementById('edit-price').value = price;
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporty - Rossoa Tracker</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="ct-root">
+<%- include('_header', { pageTitle: 'Reporty', activePage: 'reports' }) %>
+
+<div class="ct-page no-print">
+
+  <!-- Tabs -->
+  <div class="ct-report-tabs">
+    <a href="/reports?tab=construction" class="ct-report-tab <%= tab === 'construction' ? 'active' : '' %>">Stavba</a>
+    <a href="/reports?tab=worker"       class="ct-report-tab <%= tab === 'worker'       ? 'active' : '' %>">Zaměstnanec</a>
+    <a href="/reports?tab=period"       class="ct-report-tab <%= tab === 'period'        ? 'active' : '' %>">Období</a>
+  </div>
+
+  <!-- Filter: Construction -->
+  <% if (tab === 'construction') { %>
+  <form method="GET" action="/reports" class="ct-report-filter">
+    <input type="hidden" name="tab" value="construction">
+    <div class="ct-field">
+      <label>Stavba</label>
+      <select name="construction_id" required>
+        <option value="">-- Vyberte stavbu --</option>
+        <% constructions.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= selectedConstruction == c.id ? 'selected' : '' %>><%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <button type="submit" class="ct-btn ct-btn-primary ct-btn-block">Zobrazit report</button>
+  </form>
+  <% } %>
+
+  <!-- Filter: Worker -->
+  <% if (tab === 'worker') { %>
+  <form method="GET" action="/reports" class="ct-report-filter">
+    <input type="hidden" name="tab" value="worker">
+    <div class="ct-field">
+      <label>Zaměstnanec</label>
+      <select name="worker_id" required>
+        <option value="">-- Vyberte zaměstnance --</option>
+        <% workers.forEach(function(w) { %>
+          <option value="<%= w.id %>" <%= selectedWorker == w.id ? 'selected' : '' %>><%= w.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="ct-field">
+      <label>Datum od</label>
+      <input type="date" name="from" value="<%= from %>">
+    </div>
+    <div class="ct-field">
+      <label>Datum do</label>
+      <input type="date" name="to" value="<%= to %>">
+    </div>
+    <button type="submit" class="ct-btn ct-btn-primary ct-btn-block">Zobrazit report</button>
+  </form>
+  <% } %>
+
+  <!-- Filter: Period -->
+  <% if (tab === 'period') { %>
+  <form method="GET" action="/reports" class="ct-report-filter">
+    <input type="hidden" name="tab" value="period">
+    <div class="ct-field">
+      <label>Datum od</label>
+      <input type="date" name="from" value="<%= from %>" required>
+    </div>
+    <div class="ct-field">
+      <label>Datum do</label>
+      <input type="date" name="to" value="<%= to %>" required>
+    </div>
+    <div class="ct-field">
+      <label>Stavba (volitelné)</label>
+      <select name="construction_id">
+        <option value="">-- Všechny stavby --</option>
+        <% constructions.forEach(function(c) { %>
+          <option value="<%= c.id %>" <%= selectedConstruction == c.id ? 'selected' : '' %>><%= c.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="ct-field">
+      <label>Typ materiálu/služby (volitelné)</label>
+      <select name="type_filter">
+        <option value="">-- Vše --</option>
+        <% typeFilters.forEach(function(t) { %>
+          <option value="<%= t %>" <%= typeFilter === t ? 'selected' : '' %>><%= t %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="ct-field">
+      <label>Zaměstnanec (volitelné)</label>
+      <select name="worker_id">
+        <option value="">-- Všichni --</option>
+        <% workers.forEach(function(w) { %>
+          <option value="<%= w.id %>" <%= selectedWorker == w.id ? 'selected' : '' %>><%= w.name %></option>
+        <% }); %>
+      </select>
+    </div>
+    <button type="submit" class="ct-btn ct-btn-primary ct-btn-block">Zobrazit report</button>
+  </form>
+  <% } %>
+
+</div>
+
+<!-- ==================== REPORT OUTPUT ==================== -->
+<% if (reportData) { %>
+<div class="ct-report">
+
+  <!-- Print header (only visible when printing) -->
+  <div class="print-only ct-report-print-header">
+    <div class="ct-report-print-title">Stavební deník – ROSSOA s.r.o.</div>
+  </div>
+
+  <!-- Export button -->
+  <div class="ct-report-actions no-print">
+    <button class="ct-btn ct-btn-primary" onclick="window.print()">Exportovat PDF</button>
+  </div>
+
+  <!-- ===== CONSTRUCTION REPORT ===== -->
+  <% if (reportData.type === 'construction') {
+    const c = reportData.construction;
+    const stateLabel = c.state === 'In progress' ? 'Probíhající' : c.state === 'Planned' ? 'Plánovaná' : 'Dokončená';
+    const stateClass = c.state === 'In progress' ? 'in-progress' : c.state === 'Planned' ? 'planned' : 'finished';
+  %>
+  <div class="ct-report-section">
+    <div class="ct-report-title"><%= c.name %></div>
+    <div class="ct-report-meta">
+      <% if (c.customer) { %><span>Zákazník: <strong><%= c.customer %></strong></span><% } %>
+      <% if (c.beginning_date) { %><span>Zahájení: <strong><%= new Date(c.beginning_date).toLocaleDateString('cs-CZ') %></strong></span><% } %>
+      <% if (c.end_date) { %><span>Ukončení: <strong><%= new Date(c.end_date).toLocaleDateString('cs-CZ') %></strong></span><% } %>
+      <span><span class="ct-badge <%= stateClass %>"><%= stateLabel %></span></span>
+    </div>
+  </div>
+
+  <div class="ct-report-summary">
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Cena stavby</div>
+      <div class="ct-report-summary-val amber"><%= parseFloat(c.price || 0).toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Celkové náklady</div>
+      <div class="ct-report-summary-val red"><%= reportData.totalExpenses.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Zisk / ztráta</div>
+      <div class="ct-report-summary-val <%= reportData.profit >= 0 ? 'green' : 'red' %>"><%= reportData.profit.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+  </div>
+
+  <% if (reportData.matRows.length > 0) { %>
+  <div class="ct-report-section">
+    <div class="ct-report-section-title">
+      Materiály a služby
+      <span class="ct-report-section-total red"><%= reportData.matTotal.toLocaleString('cs-CZ') %> Kč</span>
+    </div>
+    <table class="ct-report-table">
+      <thead><tr><th>Kategorie</th><th>Typ</th><th>Množství</th><th style="text-align:right">Cena</th></tr></thead>
+      <tbody>
+        <% reportData.matRows.forEach(function(r) { %>
+        <tr>
+          <td><%= r.category === 'Material' ? 'Materiál' : 'Služba' %></td>
+          <td><%= r.type %></td>
+          <td><% if (r.category === 'Material' && r.total_qty) {
+            const qty = parseFloat(r.total_qty);
+            const qtyStr = qty % 1 === 0 ? qty.toLocaleString('cs-CZ') : parseFloat(qty.toFixed(10)).toLocaleString('cs-CZ');
+          %><%= qtyStr %><% if (r.unit) { %> <%= r.unit %><% } %><% } else { %>—<% } %></td>
+          <td style="text-align:right"><%= parseFloat(r.total_price).toLocaleString('cs-CZ') %> Kč</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <% if (reportData.workRows.length > 0) { %>
+  <div class="ct-report-section">
+    <div class="ct-report-section-title">
+      Práce
+      <span class="ct-report-section-total red"><%= reportData.workTotal.toLocaleString('cs-CZ') %> Kč</span>
+    </div>
+    <table class="ct-report-table">
+      <thead><tr><th>Zaměstnanec</th><th>Počet</th><th style="text-align:right">Cena</th></tr></thead>
+      <tbody>
+        <% reportData.workRows.forEach(function(r) { %>
+        <tr>
+          <td><%= r.worker_name %></td>
+          <td><%= r.count %></td>
+          <td style="text-align:right"><%= parseFloat(r.total_price).toLocaleString('cs-CZ') %> Kč</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <% } %>
+
+  <!-- ===== WORKER REPORT ===== -->
+  <% if (reportData.type === 'worker') { %>
+  <div class="ct-report-section">
+    <div class="ct-report-title"><%= reportData.worker.name %></div>
+    <div class="ct-report-meta">
+      <% if (reportData.from) { %><span>Od: <strong><%= new Date(reportData.from).toLocaleDateString('cs-CZ') %></strong></span><% } %>
+      <% if (reportData.to)   { %><span>Do: <strong><%= new Date(reportData.to).toLocaleDateString('cs-CZ') %></strong></span><% } %>
+    </div>
+  </div>
+
+  <div class="ct-report-summary">
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Počet prací</div>
+      <div class="ct-report-summary-val"><%= reportData.count %></div>
+    </div>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Celková cena</div>
+      <div class="ct-report-summary-val red"><%= reportData.total.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+  </div>
+
+  <% if (reportData.byConstruction.length === 0) { %>
+    <div class="ct-report-empty">Žádné záznamy</div>
+  <% } %>
+
+  <% reportData.byConstruction.forEach(function(g) { %>
+  <div class="ct-report-section">
+    <div class="ct-report-section-title">
+      <%= g.name %>
+      <span class="ct-report-section-total red"><%= g.total.toLocaleString('cs-CZ') %> Kč</span>
+    </div>
+    <table class="ct-report-table">
+      <thead><tr><th>Datum</th><th>Typ práce</th><th style="text-align:right">Cena</th></tr></thead>
+      <tbody>
+        <% g.works.forEach(function(w) { %>
+        <tr>
+          <td><%= w.date ? new Date(w.date).toLocaleDateString('cs-CZ') : '—' %></td>
+          <td><%= w.type %></td>
+          <td style="text-align:right"><%= parseFloat(w.price).toLocaleString('cs-CZ') %> Kč</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% }); %>
+  <% } %>
+
+  <!-- ===== PERIOD REPORT ===== -->
+  <% if (reportData.type === 'period') { %>
+  <div class="ct-report-section">
+    <div class="ct-report-title">Přehled za období</div>
+    <div class="ct-report-meta">
+      <span>Od: <strong><%= new Date(reportData.from).toLocaleDateString('cs-CZ') %></strong></span>
+      <span>Do: <strong><%= new Date(reportData.to).toLocaleDateString('cs-CZ') %></strong></span>
+      <% if (reportData.constructionFilter) { %><span>Stavba: <strong><%= reportData.constructionFilter.name %></strong></span><% } %>
+      <% if (reportData.typeFilter) { %><span>Typ: <strong><%= reportData.typeFilter %></strong></span><% } %>
+      <% if (reportData.workerFilter) { %><span>Zaměstnanec: <strong><%= reportData.workerFilter.name %></strong></span><% } %>
+    </div>
+  </div>
+
+  <div class="ct-report-summary">
+    <% if (!reportData.typeFilter) { %>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Materiály / Služby</div>
+      <div class="ct-report-summary-val red"><%= reportData.matTotal.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Práce</div>
+      <div class="ct-report-summary-val red"><%= reportData.workTotal.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+    <% } %>
+    <div class="ct-report-summary-item">
+      <div class="ct-report-summary-lbl">Celkem</div>
+      <div class="ct-report-summary-val red"><%= reportData.total.toLocaleString('cs-CZ') %> Kč</div>
+    </div>
+  </div>
+
+  <% if (reportData.groups.length === 0) { %>
+    <div class="ct-report-empty">Žádné záznamy pro zadané filtry</div>
+  <% } %>
+
+  <% reportData.groups.forEach(function(g) { %>
+  <div class="ct-report-section">
+    <div class="ct-report-section-title">
+      <%= g.name %>
+      <span class="ct-report-section-total red"><%= g.total.toLocaleString('cs-CZ') %> Kč</span>
+    </div>
+
+    <% if (g.materials.length > 0) { %>
+    <div class="ct-report-subsection-label">Materiály / Služby — <%= g.matTotal.toLocaleString('cs-CZ') %> Kč</div>
+    <table class="ct-report-table">
+      <thead><tr><th>Datum</th><th>Typ</th><th>Množství</th><th style="text-align:right">Cena</th></tr></thead>
+      <tbody>
+        <% g.materials.forEach(function(r) { %>
+        <tr>
+          <td><%= r.date ? new Date(r.date).toLocaleDateString('cs-CZ') : '—' %></td>
+          <td><%= r.category === 'Material' ? 'Materiál' : 'Služba' %> – <%= r.type %></td>
+          <td><% if (r.quantity) {
+            const qty = parseFloat(r.quantity);
+            %><%= qty % 1 === 0 ? qty.toLocaleString('cs-CZ') : parseFloat(qty.toFixed(10)).toLocaleString('cs-CZ') %><% } else { %>—<% } %></td>
+          <td style="text-align:right"><%= parseFloat(r.price).toLocaleString('cs-CZ') %> Kč</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <% } %>
+
+    <% if (g.works.length > 0) { %>
+    <div class="ct-report-subsection-label">Práce — <%= g.workTotal.toLocaleString('cs-CZ') %> Kč</div>
+    <table class="ct-report-table">
+      <thead><tr><th>Datum</th><th>Typ práce</th><th>Zaměstnanec</th><th style="text-align:right">Cena</th></tr></thead>
+      <tbody>
+        <% g.works.forEach(function(w) { %>
+        <tr>
+          <td><%= w.date ? new Date(w.date).toLocaleDateString('cs-CZ') : '—' %></td>
+          <td><%= w.type %></td>
+          <td><%= w.worker_name || '—' %></td>
+          <td style="text-align:right"><%= parseFloat(w.price).toLocaleString('cs-CZ') %> Kč</td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <% } %>
+
+  </div>
+  <% }); %>
+  <% } %>
+
+</div>
+<% } %>
+
+</div><!-- ct-root -->
+
+<script src="/app.js"></script>
+</body>
+</html>

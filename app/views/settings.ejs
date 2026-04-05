@@ -1,202 +1,166 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nastavení - Rossoa Tracker</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nastavení - Rossoa Tracker</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-brand">Rossoa Tracker</a>
-            <ul class="nav-menu">
-                <li><a href="/">Přehled</a></li>
-                <li><a href="/constructions">Stavby</a></li>
-                <li><a href="/materials">Materiály</a></li>
-                <li><a href="/works">Práce</a></li>
-                <li><a href="/workers">Zaměstnanci</a></li>
-                <li class="nav-user">
-                    <span><%= username %></span>
-                    <a href="/logout" class="btn-logout">Odhlásit</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+<div class="ct-root">
 
-    <main class="container">
-        <div class="page-header">
-            <h1>Nastavení</h1>
-        </div>
+  <%- include('_header', { pageTitle: 'Nastavení', activePage: 'settings' }) %>
 
-        <div class="settings-section">
-            <h3>Passkey (Face ID / Touch ID)</h3>
-            <p class="help-text">Zaregistrujte svůj iPhone nebo Mac pro přihlášení bez hesla.</p>
+  <div class="ct-section" style="margin-top:16px;">
 
-            <div id="passkey-message" class="alert" style="display:none;"></div>
+    <!-- Passkeys -->
+    <div class="ct-settings-section" style="margin-bottom:8px;">
+      <div class="ct-settings-title">Face ID / Touch ID (Passkey)</div>
+      <div id="passkey-message" style="display:none;padding:10px 16px;font-size:13px;"></div>
+      <% if (typeof passkeys !== 'undefined' && passkeys.length > 0) { %>
+        <ul class="ct-passkey-list">
+          <% passkeys.forEach(function(pk) { %>
+            <li class="ct-passkey-item">
+              <span>🔑 Zaregistrován <%= new Date(pk.created_at).toLocaleDateString('cs-CZ') %></span>
+              <form method="POST" action="/auth/passkey/delete/<%= pk.id %>" onsubmit="return confirm('Smazat passkey?');" style="display:inline;">
+                <button type="submit" class="ct-btn ct-btn-danger" style="padding:6px 12px;font-size:12px;">Smazat</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+      <div style="padding:12px 16px;">
+        <button type="button" class="ct-btn ct-btn-primary ct-btn-block" id="registerPasskeyBtn" onclick="registerPasskey()">Přidat passkey</button>
+      </div>
+    </div>
 
-            <% if (typeof passkeys !== 'undefined' && passkeys.length > 0) { %>
-                <ul class="settings-list">
-                    <% passkeys.forEach(function(pk) { %>
-                        <li>
-                            <span>🔑 Passkey zaregistrován <%= new Date(pk.created_at).toLocaleDateString('cs-CZ') %></span>
-                            <form method="POST" action="/auth/passkey/delete/<%= pk.id %>" style="display:inline;" onsubmit="return confirm('Opravdu chcete smazat tento passkey?');">
-                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                            </form>
-                        </li>
-                    <% }); %>
-                </ul>
-            <% } else { %>
-                <p class="empty-state" style="margin: 0.5rem 0 1rem;">Žádný passkey není zaregistrován.</p>
-            <% } // end passkeys check %>
-
-            <button type="button" class="btn btn-primary" id="registerPasskeyBtn" onclick="registerPasskey()">
-                Přidat passkey
-            </button>
-        </div>
-
-        <div class="settings-section">
-            <h3>Typy materiálů</h3>
-            <ul class="settings-list">
-                <% materialTypes.filter(t => !t.archived).forEach(function(t) { %>
-                    <li>
-                        <span><%= t.name %><% if (t.unit) { %> <small>(<%= t.unit %>)</small><% } %></span>
-                        <form method="POST" action="/settings/material-types" style="display: inline;">
-                            <input type="hidden" name="delete_type" value="<%= t.id %>">
-                            <button type="submit" class="btn btn-small btn-danger">Archivovat</button>
-                        </form>
-                        <% if (!t.used) { %>
-                            <form method="POST" action="/settings/material-types/delete/<%= t.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ?');">
-                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                            </form>
-                        <% } %>
-                    </li>
-                <% }); %>
-            </ul>
-            <% const archivedMaterials = materialTypes.filter(t => t.archived); %>
-            <% if (archivedMaterials.length > 0) { %>
-                <h4>Archivované materiály</h4>
-                <ul class="settings-list archived">
-                    <% archivedMaterials.forEach(function(t) { %>
-                        <li>
-                            <span class="archived-name"><%= t.name %></span>
-                            <form method="POST" action="/settings/material-types" style="display: inline;">
-                                <input type="hidden" name="restore_type" value="<%= t.id %>">
-                                <button type="submit" class="btn btn-small btn-primary">Obnovit</button>
-                            </form>
-                            <% if (!t.used) { %>
-                                <form method="POST" action="/settings/material-types" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ <%= t.name %>?');">
-                                    <input type="hidden" name="hard_delete_type" value="<%= t.id %>">
-                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                                </form>
-                            <% } %>
-                        </li>
-                    <% }); %>
-                </ul>
-            <% } %>
-            <form method="POST" action="/settings/material-types" class="add-form">
-                <input type="text" name="new_type" placeholder="Nový typ materiálu" required>
-                <select name="new_unit" required>
-                    <option value="">-- Jednotka --</option>
-                    <option value="ks">ks (kusy)</option>
-                    <option value="m">m (metr)</option>
-                    <option value="m²">m²</option>
-                    <option value="m³">m³</option>
-                    <option value="kg">kg (kilogram)</option>
-                    <option value="t">t (tuna)</option>
-                    <option value="l">l (litr)</option>
-                    <option value="bm">bm (běžný metr)</option>
-                </select>
-                <button type="submit" class="btn btn-primary">Přidat</button>
+    <!-- Material Types -->
+    <div class="ct-settings-section" style="margin-bottom:8px;">
+      <div class="ct-settings-title">Typy materiálů</div>
+      <ul class="ct-settings-list">
+        <% materialTypes.filter(t => !t.archived).forEach(function(t) { %>
+          <li class="ct-settings-item">
+            <span class="ct-settings-item-name"><%= t.name %><% if (t.unit) { %> <span class="ct-settings-item-unit">(<%= t.unit %>)</span><% } %></span>
+            <form method="POST" action="/settings/material-types" style="display:inline;">
+              <input type="hidden" name="delete_type" value="<%= t.id %>">
+              <button type="submit" class="ct-btn" style="padding:5px 10px;font-size:12px;">Archivovat</button>
             </form>
-        </div>
-
-        <div class="settings-section">
-            <h3>Typy služeb</h3>
-            <ul class="settings-list">
-                <% serviceTypes.filter(t => !t.archived).forEach(function(t) { %>
-                    <li>
-                        <span><%= t.name %></span>
-                        <form method="POST" action="/settings/service-types" style="display: inline;">
-                            <input type="hidden" name="delete_type" value="<%= t.id %>">
-                            <button type="submit" class="btn btn-small btn-danger">Archivovat</button>
-                        </form>
-                        <% if (!t.used) { %>
-                            <form method="POST" action="/settings/service-types/delete/<%= t.id %>" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ?');">
-                                <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                            </form>
-                        <% } %>
-                    </li>
-                <% }); %>
-            </ul>
-            <% const archivedServices = serviceTypes.filter(t => t.archived); %>
-            <% if (archivedServices.length > 0) { %>
-                <h4>Archivované služby</h4>
-                <ul class="settings-list archived">
-                    <% archivedServices.forEach(function(t) { %>
-                        <li>
-                            <span class="archived-name"><%= t.name %></span>
-                            <form method="POST" action="/settings/service-types" style="display: inline;">
-                                <input type="hidden" name="restore_type" value="<%= t.id %>">
-                                <button type="submit" class="btn btn-small btn-primary">Obnovit</button>
-                            </form>
-                            <% if (!t.used) { %>
-                                <form method="POST" action="/settings/service-types" style="display: inline;" onsubmit="return confirm('Opravdu chcete smazat typ <%= t.name %>?');">
-                                    <input type="hidden" name="hard_delete_type" value="<%= t.id %>">
-                                    <button type="submit" class="btn btn-small btn-danger">Smazat</button>
-                                </form>
-                            <% } %>
-                        </li>
-                    <% }); %>
-                </ul>
+            <% if (!t.used) { %>
+              <form method="POST" action="/settings/material-types/delete/<%= t.id %>" onsubmit="return confirm('Smazat typ?');" style="display:inline;">
+                <button type="submit" class="ct-btn ct-btn-danger" style="padding:5px 10px;font-size:12px;">Smazat</button>
+              </form>
             <% } %>
-            <form method="POST" action="/settings/service-types" class="add-form">
-                <input type="text" name="new_type" placeholder="Nový typ služby" required>
-                <button type="submit" class="btn btn-primary">Přidat</button>
+          </li>
+        <% }); %>
+      </ul>
+      <% const archivedMaterials = materialTypes.filter(t => t.archived); %>
+      <% if (archivedMaterials.length > 0) { %>
+        <div class="ct-settings-subtitle">Archivované</div>
+        <ul class="ct-settings-list">
+          <% archivedMaterials.forEach(function(t) { %>
+            <li class="ct-settings-item">
+              <span class="ct-settings-item-name archived"><%= t.name %></span>
+              <form method="POST" action="/settings/material-types" style="display:inline;">
+                <input type="hidden" name="restore_type" value="<%= t.id %>">
+                <button type="submit" class="ct-btn ct-btn-primary" style="padding:5px 10px;font-size:12px;">Obnovit</button>
+              </form>
+              <% if (!t.used) { %>
+                <form method="POST" action="/settings/material-types/delete/<%= t.id %>" onsubmit="return confirm('Smazat typ?');" style="display:inline;">
+                  <button type="submit" class="ct-btn ct-btn-danger" style="padding:5px 10px;font-size:12px;">Smazat</button>
+                </form>
+              <% } %>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+      <form method="POST" action="/settings/material-types" class="ct-settings-add">
+        <input type="text" name="new_type" placeholder="Nový typ materiálu" required>
+        <select name="new_unit" required style="max-width:120px;">
+          <option value="">-- Jednotka --</option>
+          <option value="ks">ks</option>
+          <option value="m">m</option>
+          <option value="m²">m²</option>
+          <option value="m³">m³</option>
+          <option value="kg">kg</option>
+          <option value="t">t</option>
+          <option value="l">l</option>
+          <option value="bm">bm</option>
+        </select>
+        <button type="submit" class="ct-btn ct-btn-primary" style="white-space:nowrap;flex-shrink:0;">Přidat</button>
+      </form>
+    </div>
+
+    <!-- Service Types -->
+    <div class="ct-settings-section">
+      <div class="ct-settings-title">Typy služeb</div>
+      <ul class="ct-settings-list">
+        <% serviceTypes.filter(t => !t.archived).forEach(function(t) { %>
+          <li class="ct-settings-item">
+            <span class="ct-settings-item-name"><%= t.name %></span>
+            <form method="POST" action="/settings/service-types" style="display:inline;">
+              <input type="hidden" name="delete_type" value="<%= t.id %>">
+              <button type="submit" class="ct-btn" style="padding:5px 10px;font-size:12px;">Archivovat</button>
             </form>
-        </div>
-    </main>
+            <% if (!t.used) { %>
+              <form method="POST" action="/settings/service-types/delete/<%= t.id %>" onsubmit="return confirm('Smazat typ?');" style="display:inline;">
+                <button type="submit" class="ct-btn ct-btn-danger" style="padding:5px 10px;font-size:12px;">Smazat</button>
+              </form>
+            <% } %>
+          </li>
+        <% }); %>
+      </ul>
+      <% const archivedServices = serviceTypes.filter(t => t.archived); %>
+      <% if (archivedServices.length > 0) { %>
+        <div class="ct-settings-subtitle">Archivované</div>
+        <ul class="ct-settings-list">
+          <% archivedServices.forEach(function(t) { %>
+            <li class="ct-settings-item">
+              <span class="ct-settings-item-name archived"><%= t.name %></span>
+              <form method="POST" action="/settings/service-types" style="display:inline;">
+                <input type="hidden" name="restore_type" value="<%= t.id %>">
+                <button type="submit" class="ct-btn ct-btn-primary" style="padding:5px 10px;font-size:12px;">Obnovit</button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+      <form method="POST" action="/settings/service-types" class="ct-settings-add">
+        <input type="text" name="new_type" placeholder="Nový typ služby" required>
+        <button type="submit" class="ct-btn ct-btn-primary" style="flex-shrink:0;">Přidat</button>
+      </form>
+    </div>
 
-    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
-    <script>
-        async function registerPasskey() {
-            const btn = document.getElementById('registerPasskeyBtn');
-            const msg = document.getElementById('passkey-message');
-            msg.style.display = 'none';
-            btn.disabled = true;
-            btn.textContent = 'Čekám na ověření…';
+  </div>
+</div>
 
-            try {
-                const optRes = await fetch('/auth/passkey/register-options');
-                const options = await optRes.json();
-
-                const attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
-
-                const verRes = await fetch('/auth/passkey/register-verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(attResp),
-                });
-                const result = await verRes.json();
-
-                if (result.verified) {
-                    msg.className = 'alert alert-success';
-                    msg.textContent = 'Passkey úspěšně zaregistrován!';
-                    msg.style.display = 'block';
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    throw new Error('Ověření selhalo');
-                }
-            } catch (err) {
-                msg.className = 'alert alert-error';
-                msg.textContent = err.name === 'NotAllowedError'
-                    ? 'Registrace byla zrušena.'
-                    : 'Registrace passkey selhala. Zkuste to znovu.';
-                msg.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Přidat passkey';
-            }
-        }
-    </script>
+<script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+<script src="/app.js"></script>
+<script>
+async function registerPasskey() {
+  const btn = document.getElementById('registerPasskeyBtn');
+  const msg = document.getElementById('passkey-message');
+  msg.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Čekám na ověření…';
+  try {
+    const optRes = await fetch('/auth/passkey/register-options');
+    const options = await optRes.json();
+    const attResp = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+    const verRes = await fetch('/auth/passkey/register-verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(attResp)
+    });
+    const result = await verRes.json();
+    if (result.verified) {
+      msg.className = 'ct-alert success'; msg.textContent = 'Passkey úspěšně zaregistrován!'; msg.style.display = 'block';
+      setTimeout(() => location.reload(), 1000);
+    } else { throw new Error('failed'); }
+  } catch(err) {
+    msg.className = 'ct-alert error';
+    msg.textContent = err.name === 'NotAllowedError' ? 'Registrace byla zrušena.' : 'Registrace selhala. Zkuste to znovu.';
+    msg.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Přidat passkey';
+  }
+}
+</script>
 </body>
 </html>

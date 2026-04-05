@@ -128,36 +128,96 @@ app.get('/logout', (req, res) => {
 
 app.get('/', requireAuth, async (req, res) => {
     try {
-        // Get counts
-        const [workersCount, constructionsCount, activeWorkers] = await Promise.all([
-            pool.query('SELECT COUNT(*) FROM workers'),
-            pool.query('SELECT COUNT(*) FROM constructions'),
-            pool.query("SELECT COUNT(*) FROM workers WHERE state = 'Zamestnan'")
+        const [inProgress, planned, finished, activeWorkers, totals, activeConstructions, workers, materialTypes, serviceTypes] = await Promise.all([
+            pool.query("SELECT COUNT(*) FROM constructions WHERE state = 'In progress'"),
+            pool.query("SELECT COUNT(*) FROM constructions WHERE state = 'Planned'"),
+            pool.query("SELECT COUNT(*) FROM constructions WHERE state = 'Finished'"),
+            pool.query("SELECT COUNT(*) FROM workers WHERE state = 'Zamestnan'"),
+            pool.query(`
+                SELECT
+                    COALESCE(SUM(c.price), 0) AS total_price,
+                    COALESCE(SUM(
+                        COALESCE((SELECT SUM(price) FROM materials_services WHERE construction_id = c.id), 0) +
+                        COALESCE((SELECT SUM(price) FROM works WHERE construction_id = c.id), 0)
+                    ), 0) AS total_expenses
+                FROM constructions c
+            `),
+            pool.query(`
+                SELECT c.*,
+                    COALESCE((SELECT SUM(price) FROM materials_services WHERE construction_id = c.id), 0) as materials_total,
+                    COALESCE((SELECT SUM(price) FROM works WHERE construction_id = c.id), 0) as works_total
+                FROM constructions c
+                WHERE c.state IN ('In progress', 'Planned')
+                ORDER BY CASE c.state WHEN 'In progress' THEN 0 ELSE 1 END, c.created_at DESC
+            `),
+            pool.query("SELECT id, name FROM workers WHERE state = 'Zamestnan' ORDER BY name"),
+            pool.query("SELECT name, unit FROM material_types WHERE archived = FALSE ORDER BY name"),
+            pool.query("SELECT name FROM service_types WHERE archived = FALSE ORDER BY name"),
         ]);
 
-        // Get recent constructions
-        const recentConstructions = await pool.query(`
-            SELECT c.*,
-                COALESCE((SELECT SUM(price) FROM materials_services WHERE construction_id = c.id), 0) +
-                COALESCE((SELECT SUM(price) FROM works WHERE construction_id = c.id), 0) as total_expenses
-            FROM constructions c
-            ORDER BY c.created_at DESC
-            LIMIT 5
-        `);
+        const totalPrice = parseFloat(totals.rows[0].total_price);
+        const totalExpenses = parseFloat(totals.rows[0].total_expenses);
+
+        const constructionIds = activeConstructions.rows.map(c => c.id);
+        let recordsByConstruction = {};
+        if (constructionIds.length > 0) {
+            const recordsRes = await pool.query(`
+                (SELECT ms.id, ms.construction_id, ms.date,
+                  CONCAT(ms.category, ' – ', ms.type) as description,
+                  ms.price, 'material' as kind,
+                  ms.quantity, COALESCE(mt.unit, '') as unit,
+                  ms.category as raw_category, ms.type as raw_type, NULL::integer as worker_id, '' as worker_name
+                FROM materials_services ms
+                LEFT JOIN material_types mt ON LOWER(ms.type) = LOWER(mt.name) AND ms.category = 'Material'
+                WHERE ms.construction_id = ANY($1))
+                UNION ALL
+                (SELECT id, construction_id, date, CONCAT('Práce – ', type) as description, price, 'work' as kind,
+                  NULL as quantity, '' as unit,
+                  '' as raw_category, type as raw_type, worker_id, COALESCE(worker_name, '') as worker_name
+                FROM works WHERE construction_id = ANY($1))
+                ORDER BY date DESC
+            `, [constructionIds]);
+            recordsRes.rows.forEach(r => {
+                if (!recordsByConstruction[r.construction_id]) recordsByConstruction[r.construction_id] = [];
+                if (recordsByConstruction[r.construction_id].length < 10) {
+                    if (r.quantity != null) {
+                        const qty = parseFloat(r.quantity);
+                        const qtyStr = qty % 1 === 0 ? qty.toString() : parseFloat(qty.toFixed(10)).toString();
+                        r.description += ', ' + qtyStr + (r.unit ? ' ' + r.unit : '');
+                    }
+                    if (r.kind === 'work' && r.worker_name) {
+                        r.description += ', ' + r.worker_name;
+                    }
+                    recordsByConstruction[r.construction_id].push(r);
+                }
+            });
+        }
+
+        const constructions = activeConstructions.rows.map(c => ({
+            ...c,
+            total_expenses: parseFloat(c.materials_total) + parseFloat(c.works_total),
+            records: recordsByConstruction[c.id] || [],
+        }));
 
         res.render('dashboard', {
-            workersCount: workersCount.rows[0].count,
-            constructionsCount: constructionsCount.rows[0].count,
+            inProgress: inProgress.rows[0].count,
+            planned: planned.rows[0].count,
+            finished: finished.rows[0].count,
             activeWorkers: activeWorkers.rows[0].count,
-            recentConstructions: recentConstructions.rows
+            totalPrice,
+            totalExpenses,
+            totalProfit: totalPrice - totalExpenses,
+            constructions,
+            workers: workers.rows,
+            materialTypes: materialTypes.rows,
+            serviceTypes: serviceTypes.rows,
         });
     } catch (err) {
         console.error('Dashboard error:', err);
         res.render('dashboard', {
-            workersCount: 0,
-            constructionsCount: 0,
-            activeWorkers: 0,
-            recentConstructions: []
+            inProgress: 0, planned: 0, finished: 0, activeWorkers: 0,
+            totalPrice: 0, totalExpenses: 0, totalProfit: 0,
+            constructions: [], workers: [], materialTypes: [], serviceTypes: [],
         });
     }
 });
@@ -257,7 +317,7 @@ const computeState = (beginningDate, endDate) => {
 };
 
 app.post('/constructions', requireAuth, async (req, res) => {
-    const { name, customer, beginning_date, end_date, price } = req.body;
+    const { name, customer, beginning_date, end_date, price, redirect_to } = req.body;
     const state = computeState(beginning_date, end_date);
     try {
         if (req.body.id) {
@@ -271,10 +331,10 @@ app.post('/constructions', requireAuth, async (req, res) => {
                 [name, customer, state, beginning_date || null, end_date || null, price || 0]
             );
         }
-        res.redirect('/constructions');
+        res.redirect(redirect_to || '/constructions');
     } catch (err) {
         console.error('Constructions POST error:', err);
-        res.redirect('/constructions');
+        res.redirect(redirect_to || '/constructions');
     }
 });
 
@@ -368,11 +428,53 @@ app.post('/materials', requireAuth, async (req, res) => {
                 [construction_id, date, category, finalType, price, finalQuantity]
             );
         }
-        const redirectUrl = construction_id ? `/materials?construction_id=${construction_id}` : '/materials';
+        const redirectUrl = req.body.redirect_to || (construction_id ? `/materials?construction_id=${construction_id}` : '/materials');
         res.redirect(redirectUrl);
     } catch (err) {
         console.error('Materials POST error:', err);
         res.redirect('/materials');
+    }
+});
+
+// ============ QUICK RECORD API ============
+
+app.post('/api/quick-record', requireAuth, async (req, res) => {
+    const { construction_id, record_type, category, type, worker_id, date, price } = req.body;
+    try {
+        if (record_type === 'work') {
+            const workerRes = await pool.query('SELECT name FROM workers WHERE id = $1', [worker_id]);
+            const workerName = workerRes.rows[0] ? workerRes.rows[0].name : null;
+            const constrRes = await pool.query('SELECT name FROM constructions WHERE id = $1', [construction_id]);
+            const constructionName = constrRes.rows[0] ? constrRes.rows[0].name : null;
+            await pool.query(
+                'INSERT INTO works (construction_id, construction_name, date, type, worker_id, worker_name, price) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+                [construction_id, constructionName, date, type, worker_id || null, workerName, price]
+            );
+        } else {
+            await pool.query(
+                'INSERT INTO materials_services (construction_id, date, category, type, price) VALUES ($1, $2, $3, $4, $5)',
+                [construction_id, date, category, type, price]
+            );
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Quick record error:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.post('/api/edit-record', requireAuth, async (req, res) => {
+    const { id, kind, description, date, price } = req.body;
+    try {
+        if (kind === 'work') {
+            await pool.query('UPDATE works SET type = $1, date = $2, price = $3 WHERE id = $4', [description, date, price, id]);
+        } else {
+            await pool.query('UPDATE materials_services SET type = $1, date = $2, price = $3 WHERE id = $4', [description, date, price, id]);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Edit record error:', err);
+        res.status(500).json({ success: false });
     }
 });
 
@@ -578,10 +680,11 @@ app.get('/works', requireAuth, async (req, res) => {
 });
 
 app.post('/works', requireAuth, async (req, res) => {
-    const { construction_id, date, type, worker_id, price } = req.body;
+    const { construction_id, date, type, price } = req.body;
+    const worker_id = req.body.worker_id || null;
     try {
         // Get worker and construction names
-        const workerResult = await pool.query('SELECT name FROM workers WHERE id = $1', [worker_id]);
+        const workerResult = worker_id ? await pool.query('SELECT name FROM workers WHERE id = $1', [worker_id]) : { rows: [] };
         const workerName = workerResult.rows.length > 0 ? workerResult.rows[0].name : null;
         const constrResult = await pool.query('SELECT name FROM constructions WHERE id = $1', [construction_id]);
         const constructionName = constrResult.rows.length > 0 ? constrResult.rows[0].name : null;
@@ -597,7 +700,7 @@ app.post('/works', requireAuth, async (req, res) => {
                 [construction_id, constructionName, date, type, worker_id || null, workerName, price]
             );
         }
-        const redirectUrl = construction_id ? `/works?construction_id=${construction_id}` : '/works';
+        const redirectUrl = req.body.redirect_to || (construction_id ? `/works?construction_id=${construction_id}` : '/works');
         res.redirect(redirectUrl);
     } catch (err) {
         console.error('Works POST error:', err);
@@ -612,6 +715,156 @@ app.post('/works/delete/:id', requireAuth, async (req, res) => {
     } catch (err) {
         console.error('Delete work error:', err);
         res.redirect('/works');
+    }
+});
+
+// ============ REPORTS ROUTES ============
+
+app.get('/reports', requireAuth, async (req, res) => {
+    const { tab, construction_id, worker_id, from, to, type_filter } = req.query;
+    try {
+        const [constructionsRes, workersRes, typeFiltersRes] = await Promise.all([
+            pool.query('SELECT id, name FROM constructions ORDER BY created_at DESC'),
+            pool.query('SELECT id, name FROM workers ORDER BY name'),
+            pool.query('SELECT DISTINCT type FROM materials_services ORDER BY type'),
+        ]);
+
+        let reportData = null;
+
+        if (tab === 'construction' && construction_id) {
+            const [constrRes, matRes, workRes] = await Promise.all([
+                pool.query('SELECT * FROM constructions WHERE id = $1', [construction_id]),
+                pool.query(`
+                    SELECT ms.category, ms.type,
+                        SUM(CASE WHEN ms.category = 'Material' THEN ms.quantity ELSE NULL END) as total_qty,
+                        COALESCE(mt.unit, '') as unit,
+                        SUM(ms.price) as total_price
+                    FROM materials_services ms
+                    LEFT JOIN material_types mt ON LOWER(ms.type) = LOWER(mt.name) AND ms.category = 'Material'
+                    WHERE ms.construction_id = $1
+                    GROUP BY ms.category, ms.type, mt.unit
+                    ORDER BY ms.category, ms.type
+                `, [construction_id]),
+                pool.query(`
+                    SELECT COALESCE(worker_name, '—') as worker_name,
+                        COUNT(*) as count, SUM(price) as total_price
+                    FROM works WHERE construction_id = $1
+                    GROUP BY worker_name ORDER BY worker_name
+                `, [construction_id]),
+            ]);
+            if (constrRes.rows.length > 0) {
+                const c = constrRes.rows[0];
+                const matTotal = matRes.rows.reduce((s, r) => s + parseFloat(r.total_price), 0);
+                const workTotal = workRes.rows.reduce((s, r) => s + parseFloat(r.total_price), 0);
+                reportData = {
+                    type: 'construction', construction: c,
+                    matRows: matRes.rows, workRows: workRes.rows,
+                    matTotal, workTotal,
+                    totalExpenses: matTotal + workTotal,
+                    profit: parseFloat(c.price || 0) - (matTotal + workTotal),
+                };
+            }
+        }
+
+        else if (tab === 'worker' && worker_id) {
+            const params = [worker_id];
+            let where = 'WHERE w.worker_id = $1';
+            if (from) { params.push(from); where += ` AND w.date >= $${params.length}`; }
+            if (to)   { params.push(to);   where += ` AND w.date <= $${params.length}`; }
+            const [workerRes, worksRes] = await Promise.all([
+                pool.query('SELECT * FROM workers WHERE id = $1', [worker_id]),
+                pool.query(`
+                    SELECT w.*, c.name as construction_name
+                    FROM works w LEFT JOIN constructions c ON w.construction_id = c.id
+                    ${where} ORDER BY w.date DESC
+                `, params),
+            ]);
+            if (workerRes.rows.length > 0) {
+                const byConstruction = {};
+                worksRes.rows.forEach(w => {
+                    const key = w.construction_id;
+                    if (!byConstruction[key]) byConstruction[key] = { name: w.construction_name || '—', works: [], total: 0 };
+                    byConstruction[key].works.push(w);
+                    byConstruction[key].total += parseFloat(w.price);
+                });
+                reportData = {
+                    type: 'worker', worker: workerRes.rows[0],
+                    byConstruction: Object.values(byConstruction),
+                    total: worksRes.rows.reduce((s, w) => s + parseFloat(w.price), 0),
+                    count: worksRes.rows.length, from, to,
+                };
+            }
+        }
+
+        else if (tab === 'period' && from && to) {
+            const matParams = [from, to];
+            let matWhere = 'WHERE ms.date >= $1 AND ms.date <= $2';
+            if (construction_id) { matParams.push(construction_id); matWhere += ` AND ms.construction_id = $${matParams.length}`; }
+            if (type_filter)     { matParams.push(type_filter);     matWhere += ` AND LOWER(ms.type) = LOWER($${matParams.length})`; }
+
+            const workParams = [from, to];
+            let workWhere = 'WHERE w.date >= $1 AND w.date <= $2';
+            if (construction_id) { workParams.push(construction_id); workWhere += ` AND w.construction_id = $${workParams.length}`; }
+            if (worker_id)       { workParams.push(worker_id);       workWhere += ` AND w.worker_id = $${workParams.length}`; }
+
+            const [matRes, workRes] = await Promise.all([
+                pool.query(`
+                    SELECT ms.*, c.name as construction_name
+                    FROM materials_services ms JOIN constructions c ON ms.construction_id = c.id
+                    ${matWhere} ORDER BY ms.date DESC
+                `, matParams),
+                type_filter ? Promise.resolve({ rows: [] }) : pool.query(`
+                    SELECT w.*, c.name as construction_name
+                    FROM works w JOIN constructions c ON w.construction_id = c.id
+                    ${workWhere} ORDER BY w.date DESC
+                `, workParams),
+            ]);
+
+            const byConstruction = {};
+            matRes.rows.forEach(r => {
+                if (!byConstruction[r.construction_id]) byConstruction[r.construction_id] = { name: r.construction_name, materials: [], works: [], matTotal: 0, workTotal: 0 };
+                byConstruction[r.construction_id].materials.push(r);
+                byConstruction[r.construction_id].matTotal += parseFloat(r.price);
+            });
+            workRes.rows.forEach(r => {
+                if (!byConstruction[r.construction_id]) byConstruction[r.construction_id] = { name: r.construction_name, materials: [], works: [], matTotal: 0, workTotal: 0 };
+                byConstruction[r.construction_id].works.push(r);
+                byConstruction[r.construction_id].workTotal += parseFloat(r.price);
+            });
+            const groups = Object.values(byConstruction).map(g => ({ ...g, total: g.matTotal + g.workTotal }));
+            const selectedWorker = worker_id ? workersRes.rows.find(w => w.id == worker_id) : null;
+            const selectedConstr = construction_id ? constructionsRes.rows.find(c => c.id == construction_id) : null;
+            reportData = {
+                type: 'period', from, to,
+                typeFilter: type_filter || null,
+                workerFilter: selectedWorker || null,
+                constructionFilter: selectedConstr || null,
+                groups,
+                matTotal: matRes.rows.reduce((s, r) => s + parseFloat(r.price), 0),
+                workTotal: workRes.rows.reduce((s, r) => s + parseFloat(r.price), 0),
+                total: matRes.rows.reduce((s, r) => s + parseFloat(r.price), 0) + workRes.rows.reduce((s, r) => s + parseFloat(r.price), 0),
+            };
+        }
+
+        res.render('reports', {
+            tab: tab || 'construction',
+            constructions: constructionsRes.rows,
+            workers: workersRes.rows,
+            typeFilters: typeFiltersRes.rows.map(r => r.type),
+            selectedConstruction: construction_id || '',
+            selectedWorker: worker_id || '',
+            from: from || '', to: to || '',
+            typeFilter: type_filter || '',
+            reportData,
+        });
+    } catch (err) {
+        console.error('Reports error:', err);
+        res.render('reports', {
+            tab: tab || 'construction',
+            constructions: [], workers: [], typeFilters: [],
+            selectedConstruction: '', selectedWorker: '', from: '', to: '', typeFilter: '',
+            reportData: null,
+        });
     }
 });
 
